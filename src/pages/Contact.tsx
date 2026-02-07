@@ -36,9 +36,17 @@ const Contact = () => {
       return;
     }
     setErrors({});
+
+    const subject = encodeURIComponent(`Contact from ${form.name}`);
+    const body = encodeURIComponent(
+      `Name: ${form.name}\nEmail: ${form.email}\n\nMessage:\n${form.message}`
+    );
+    const mailtoLink = `mailto:taruntubati9@gmail.com?subject=${subject}&body=${body}`;
+    window.open(mailtoLink, "_blank");
+
     toast({
-      title: "Message sent!",
-      description: "Thank you for reaching out. We'll get back to you soon.",
+      title: "Opening your email client",
+      description: "Please send the pre-filled email to complete your message.",
     });
     setForm({ name: "", email: "", message: "" });
   };
