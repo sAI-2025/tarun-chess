@@ -1,0 +1,137 @@
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Mail, Phone, MessageCircle, Send } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
+
+const contactSchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(100),
+  email: z.string().trim().email("Invalid email address").max(255),
+  message: z.string().trim().min(1, "Message is required").max(1000),
+});
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+};
+
+const Contact = () => {
+  const { toast } = useToast();
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const result = contactSchema.safeParse(form);
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.errors.forEach((err) => {
+        if (err.path[0]) fieldErrors[err.path[0] as string] = err.message;
+      });
+      setErrors(fieldErrors);
+      return;
+    }
+    setErrors({});
+    toast({
+      title: "Message sent!",
+      description: "Thank you for reaching out. We'll get back to you soon.",
+    });
+    setForm({ name: "", email: "", message: "" });
+  };
+
+  return (
+    <section className="py-16 md:py-24">
+      <div className="container max-w-4xl">
+        <h1 className="font-display text-4xl font-bold text-foreground mb-4 text-center">Contact Us</h1>
+        <p className="text-muted-foreground text-center mb-12 max-w-md mx-auto">
+          Have a question or ready to get started? Reach out and we'll be happy to help.
+        </p>
+
+        <div className="grid md:grid-cols-2 gap-10">
+          {/* Form */}
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
+            <Card className="border-none shadow-md">
+              <CardContent className="pt-6">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-1 block">Name</label>
+                    <Input
+                      value={form.name}
+                      onChange={(e) => setForm({ ...form, name: e.target.value })}
+                      placeholder="Your name"
+                      className="rounded-lg"
+                    />
+                    {errors.name && <p className="text-sm text-destructive mt-1">{errors.name}</p>}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-1 block">Email</label>
+                    <Input
+                      type="email"
+                      value={form.email}
+                      onChange={(e) => setForm({ ...form, email: e.target.value })}
+                      placeholder="your@email.com"
+                      className="rounded-lg"
+                    />
+                    {errors.email && <p className="text-sm text-destructive mt-1">{errors.email}</p>}
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-1 block">Message</label>
+                    <Textarea
+                      value={form.message}
+                      onChange={(e) => setForm({ ...form, message: e.target.value })}
+                      placeholder="How can we help?"
+                      rows={5}
+                      className="rounded-lg"
+                    />
+                    {errors.message && <p className="text-sm text-destructive mt-1">{errors.message}</p>}
+                  </div>
+                  <Button type="submit" className="w-full rounded-full bg-accent text-accent-foreground hover:bg-accent/90">
+                    <Send className="mr-2 h-4 w-4" /> Send Message
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Contact Info */}
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="space-y-6">
+            <div>
+              <h3 className="font-display text-xl font-semibold text-foreground mb-4">Get in Touch</h3>
+              <div className="space-y-4">
+                <a href="mailto:taruntubati9@gmail.com" className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                    <Mail className="h-5 w-5 text-primary" />
+                  </div>
+                  <span className="text-sm">taruntubati9@gmail.com</span>
+                </a>
+                <div className="flex items-center gap-3 text-muted-foreground">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                    <Phone className="h-5 w-5 text-primary" />
+                  </div>
+                  <span className="text-sm">Phone available upon request</span>
+                </div>
+                <a
+                  href={`https://wa.me/?text=${encodeURIComponent("Hi! I'm interested in Tarun's Chess Academy.")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors"
+                >
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                    <MessageCircle className="h-5 w-5 text-primary" />
+                  </div>
+                  <span className="text-sm">Message on WhatsApp</span>
+                </a>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default Contact;
