@@ -1,8 +1,11 @@
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { GraduationCap, Tent, Trophy, CalendarDays, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import FloatingChessPieces from "@/components/FloatingChessPieces";
+import heroBanner from "@/assets/chess-hero-banner.jpg";
+import { useRef } from "react";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -38,12 +41,52 @@ const upcomingEvents = [
 ];
 
 const Index = () => {
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
+  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
+  const overlayOpacity = useTransform(scrollYProgress, [0, 1], [0.55, 0.8]);
+
   return (
     <>
       {/* Hero */}
-      <section className="relative overflow-hidden py-20 md:py-32">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
-        <div className="container relative">
+      <section ref={heroRef} className="relative overflow-hidden min-h-[85vh] flex items-center">
+        {/* Parallax background image */}
+        <motion.div
+          className="absolute inset-0 -top-10 -bottom-10"
+          style={{ y: bgY }}
+        >
+          <img
+            src={heroBanner}
+            alt="Chess pieces on a warm wooden board"
+            className="h-full w-full object-cover"
+          />
+        </motion.div>
+
+        {/* Gradient overlay */}
+        <motion.div
+          className="absolute inset-0 bg-gradient-to-br from-foreground/70 via-foreground/50 to-primary/40"
+          style={{ opacity: overlayOpacity }}
+        />
+
+        {/* Floating chess pieces */}
+        <FloatingChessPieces />
+
+        {/* Decorative chessboard grid */}
+        <div className="absolute inset-0 opacity-[0.03]" aria-hidden="true">
+          <div
+            className="h-full w-full"
+            style={{
+              backgroundImage:
+                "linear-gradient(90deg, currentColor 1px, transparent 1px), linear-gradient(currentColor 1px, transparent 1px)",
+              backgroundSize: "60px 60px",
+            }}
+          />
+        </div>
+
+        <div className="container relative z-10 py-20 md:py-32">
           <motion.div
             initial="hidden"
             animate="visible"
@@ -59,15 +102,15 @@ const Index = () => {
             <motion.h1
               variants={fadeUp}
               custom={1}
-              className="font-display text-4xl font-bold leading-tight text-foreground md:text-5xl lg:text-6xl"
+              className="font-display text-4xl font-bold leading-tight text-primary-foreground md:text-5xl lg:text-6xl drop-shadow-lg"
             >
               Build Confidence,{" "}
-              <span className="text-primary">One Move at a Time</span>
+              <span className="text-accent">One Move at a Time</span>
             </motion.h1>
             <motion.p
               variants={fadeUp}
               custom={2}
-              className="mt-6 text-lg text-muted-foreground"
+              className="mt-6 text-lg text-primary-foreground/85 drop-shadow"
             >
               Patient, fundamentals-first chess instruction that helps students
               think clearly, play confidently, and love the game.
@@ -77,10 +120,15 @@ const Index = () => {
               custom={3}
               className="mt-8 flex flex-wrap justify-center gap-4"
             >
-              <Button asChild size="lg" className="rounded-full bg-accent text-accent-foreground hover:bg-accent/90 px-8">
+              <Button asChild size="lg" className="rounded-full bg-accent text-accent-foreground hover:bg-accent/90 px-8 shadow-lg">
                 <Link to="/contact">Join Now</Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="rounded-full px-8">
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="rounded-full px-8 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
+              >
                 <Link to="/programs">
                   Explore Programs <ArrowRight className="ml-1 h-4 w-4" />
                 </Link>
@@ -88,6 +136,9 @@ const Index = () => {
             </motion.div>
           </motion.div>
         </div>
+
+        {/* Bottom fade to background */}
+        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent" />
       </section>
 
       {/* Features */}
