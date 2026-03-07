@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { BookOpen, Target, User, Star } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import tarunPhoto from "@/assets/tarun-photo.jpeg";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -69,11 +70,15 @@ const About = () => (
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
           <h2 className="font-display text-3xl font-bold text-foreground mb-8 text-center">Meet the Coach</h2>
           <div className="flex flex-col md:flex-row gap-8 items-start">
-            <div className="shrink-0 mx-auto md:mx-0">
-              <div className="h-40 w-40 rounded-2xl bg-secondary flex items-center justify-center">
-                <User className="h-20 w-20 text-muted-foreground/40" />
-              </div>
-            </div>
+             <div className="shrink-0 mx-auto md:mx-0">
+               <div className="h-48 w-40 rounded-2xl overflow-hidden shadow-lg">
+                 <img
+                   src={tarunPhoto}
+                   alt="Tarun Sai Tubati — Chess Coach"
+                   className="h-full w-full object-cover object-top"
+                 />
+               </div>
+             </div>
             <div className="space-y-3 text-muted-foreground leading-relaxed">
               <h3 className="font-display text-xl font-semibold text-foreground">Tarun Sai Tubati</h3>
               <p>
