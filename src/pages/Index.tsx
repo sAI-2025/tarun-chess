@@ -225,7 +225,7 @@ const Index = () => {
             Whether you're a complete beginner or preparing for competition, we have a program for you.
           </p>
           <Button asChild size="lg" className="rounded-full bg-accent text-accent-foreground hover:bg-accent/90 px-8">
-            <Link to="/contact">Get Started Today</Link>
+            <a href="https://api.whatsapp.com/send/?phone=%2B19846876038&text=Hi%21+I%27m+interested+in+learning+more+about+Tarun's+Chess+Academy.+Please+share+details+about+your+chess+coaching+programs.&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer">Get Started Today</a>
           </Button>
         </div>
       </section>
