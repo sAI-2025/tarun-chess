@@ -45,7 +45,7 @@ const Navbar = () => {
           ))}
           <li className="ml-2">
             <Button asChild size="sm" className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-full px-5">
-              <Link to="/contact">Join Now</Link>
+              <a href="https://api.whatsapp.com/send/?phone=%2B19846876038&text=Hi%21+I%27m+interested+in+learning+more+about+Tarun's+Chess+Academy.+Please+share+details+about+your+chess+coaching+programs.&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer">Join Now</a>
             </Button>
           </li>
         </ul>
