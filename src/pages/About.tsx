@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { BookOpen, Target, User, Star } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import tarunPhoto from "@/assets/tarun-photo.jpeg";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
