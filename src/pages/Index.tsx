@@ -127,7 +127,7 @@ const Index = () => {
                 asChild
                 size="lg"
                 variant="outline"
-                className="rounded-full px-8 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
+                className="rounded-full px-8 border-primary-foreground/30 text-primary-foreground hover:border-accent hover:text-accent hover:bg-transparent"
               >
                 <Link to="/programs">
                   Explore Programs <ArrowRight className="ml-1 h-4 w-4" />
