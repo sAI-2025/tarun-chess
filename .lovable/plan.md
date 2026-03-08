@@ -1,60 +1,44 @@
 
-# Chess Academy Website
 
-A warm, approachable informational website for Tarun's Chess Academy — designed to attract parents and students, showcase programs, and direct visitors to external registration.
+# Plan: Footer Content Editor in Admin Panel
 
----
+## Data Model (`src/lib/siteData.ts`)
 
-## Pages & Structure
+Add a new interface and default data:
 
-### 1. Home
-- **Hero section** with a welcoming headline, chess-themed imagery (placeholder), and tagline about building confident chess players
-- **Three feature cards**: Classes, Camps, Tournaments — each with an icon and brief description
-- **Call-to-action buttons**: "Join Now" and "Book a Class" linking to the Contact page
-- **Upcoming Events preview** showing 2–3 nearest events with dates
+```ts
+export interface FooterData {
+  brandName: string;           // "Tarun's Chess Academy"
+  tagline: string;             // "Building confident, thoughtful chess players..."
+  contactEmail: string;        // "tarun.tubati9@gmail.com"
+  copyrightText: string;       // "Tarun's Chess Academy. All rights reserved."
+  quickLinks: { id: string; label: string; path: string }[];
+  socialLinks: { id: string; platform: string; url: string }[];
+}
+```
 
-### 2. About Us
-Tabbed or scrolling sub-sections:
-- **Our Story** — the founding philosophy and teaching approach (content provided)
-- **Mission & Vision** — concise goals for chess education
-- **Meet Tarun** — bio, photo placeholder, achievements (two-time state champion, assistant TD)
-- **Why Choose Us** — teaching style highlights: fundamentals-first, patient instruction, structured learning
+Add `footer: FooterData` to `SiteData` with current hardcoded values as defaults. Social links start as an empty array (none exist currently).
 
-### 3. Programs
-Clean card-based layout for each offering:
-- Group Classes
-- One-on-One Training
-- Online Coaching
-- Beginner & Intermediate levels
-- Tournament Preparation
+## Footer Component (`src/components/Footer.tsx`)
 
-Each card includes a brief description and a "Learn More" or "Sign Up" button linking to the Contact page.
+Import `useSiteData`, replace all hardcoded text (brand name, tagline, email, quick links, copyright) with `siteData.footer.*`. Render social links dynamically if any exist.
 
-### 4. Events
-- **Summer Camps** section with details and past bootcamp info (VTSEVA volunteer camp story)
-- **Tournaments** section
-- **Workshops & Special Events**
-- **Event Calendar** — a visual monthly calendar showing upcoming events
-- **Registration Info** — links to external Google Forms for sign-up
+## Admin Panel (`src/pages/Admin.tsx`)
 
-### 5. Blog *(placeholder)*
-- A simple "Coming Soon" page to hold the spot in navigation
+Add an **8th tab "Footer"** (with a layout icon). Update `grid-cols-7` to `grid-cols-8`.
 
-### 6. Contact Us
-- **Contact form** (name, email, message) with validation
-- **Contact details**: email (taruntubati9@gmail.com), phone placeholder, WhatsApp link
-- Toast notification on form submission (no backend — just confirmation UI for now)
+**FooterEditor** component with:
+- Brand name and tagline inputs
+- Contact email input
+- Copyright text input
+- Quick links list: editable label + path per link, add/remove/reorder
+- Social links list: platform selector (Facebook, Twitter/X, Instagram, YouTube, LinkedIn) + URL input, add/remove
 
----
+## Files Changed
 
-## Design & Style
-- **Warm & approachable** palette: soft cream/warm white background, friendly navy/teal primary color, warm amber accents
-- Rounded corners, soft shadows, inviting typography
-- Chess piece icons/illustrations as decorative elements
-- Fully responsive — mobile-friendly navigation with hamburger menu
-- Smooth scroll animations between sections
+| File | Change |
+|------|--------|
+| `src/lib/siteData.ts` | Add `FooterData` interface + defaults in `SiteData` |
+| `src/components/Footer.tsx` | Read from `siteData.footer`, render dynamically |
+| `src/pages/Admin.tsx` | Add Footer tab + `FooterEditor` component |
 
-## Navigation
-- **Top navigation bar** with logo placeholder + links: Home, About Us, Programs, Events, Blog, Contact Us
-- Mobile: collapsible hamburger menu
-- Sticky header for easy access while scrolling
