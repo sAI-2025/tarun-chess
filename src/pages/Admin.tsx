@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, DragEvent } from 'react';
+import { useState, useEffect, useRef, DragEvent, createContext, useContext, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,19 +8,32 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { useSiteData } from '@/contexts/SiteDataContext';
-import { 
-  validateAdmin, 
-  isAdminLoggedIn, 
-  setAdminLoggedIn, 
+import {
+  validateAdmin,
+  isAdminLoggedIn,
+  setAdminLoggedIn,
   generateId,
   getAdminPassword,
   setAdminPassword,
   getAdminEmail,
   setAdminEmail
 } from '@/lib/siteData';
-import type { UpcomingEvent, Program, EventSection } from '@/lib/siteData';
-import { Trash2, Plus, GripVertical, LogOut, Eye, Save, RotateCcw, Lock, Pencil, Calendar, BookOpen, LayoutGrid, CheckCircle } from 'lucide-react';
+import type { SiteData, UpcomingEvent, Program, EventSection, PastBootcamp } from '@/lib/siteData';
+import { Trash2, Plus, GripVertical, LogOut, Eye, Save, RotateCcw, Lock, Pencil, Calendar, BookOpen, LayoutGrid, CheckCircle, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+
+// ─── Draft Context ───────────────────────────────────────────────────
+interface DraftContextType {
+  draft: SiteData;
+  setDraft: React.Dispatch<React.SetStateAction<SiteData>>;
+  hasChanges: boolean;
+}
+const DraftContext = createContext<DraftContextType | null>(null);
+function useDraft() {
+  const ctx = useContext(DraftContext);
+  if (!ctx) throw new Error('useDraft must be used within DraftContext');
+  return ctx;
+}
 
 // ─── Drag-and-drop hook ─────────────────────────────────────────────
 function useDragReorder<T>(items: T[], onReorder: (items: T[]) => void) {
@@ -34,40 +47,22 @@ function useDragReorder<T>(items: T[], onReorder: (items: T[]) => void) {
     setDraggingIdx(index);
     e.dataTransfer.effectAllowed = 'move';
   };
-
   const handleDragEnter = (index: number) => () => {
     dragOverItem.current = index;
     setDragOverIdx(index);
   };
-
-  const handleDragOver = (e: DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  };
-
+  const handleDragOver = (e: DragEvent) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; };
   const handleDrop = () => {
     if (dragItem.current === null || dragOverItem.current === null) return;
-    if (dragItem.current === dragOverItem.current) {
-      setDraggingIdx(null);
-      setDragOverIdx(null);
-      return;
-    }
+    if (dragItem.current === dragOverItem.current) { setDraggingIdx(null); setDragOverIdx(null); return; }
     const updated = [...items];
     const [removed] = updated.splice(dragItem.current, 1);
     updated.splice(dragOverItem.current, 0, removed);
     onReorder(updated);
-    dragItem.current = null;
-    dragOverItem.current = null;
-    setDraggingIdx(null);
-    setDragOverIdx(null);
+    dragItem.current = null; dragOverItem.current = null;
+    setDraggingIdx(null); setDragOverIdx(null);
   };
-
-  const handleDragEnd = () => {
-    setDraggingIdx(null);
-    setDragOverIdx(null);
-    dragItem.current = null;
-    dragOverItem.current = null;
-  };
+  const handleDragEnd = () => { setDraggingIdx(null); setDragOverIdx(null); dragItem.current = null; dragOverItem.current = null; };
 
   return { draggingIdx, dragOverIdx, handleDragStart, handleDragEnter, handleDragOver, handleDrop, handleDragEnd };
 }
@@ -80,12 +75,8 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateAdmin(email, password)) {
-      setAdminLoggedIn(true);
-      onLogin();
-    } else {
-      setError('Invalid credentials');
-    }
+    if (validateAdmin(email, password)) { setAdminLoggedIn(true); onLogin(); }
+    else { setError('Invalid credentials'); }
   };
 
   return (
@@ -127,29 +118,19 @@ function ChangeCredentialsSection() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (currentPassword !== getAdminPassword()) { toast.error('Current password is incorrect'); return; }
-    
     let changed = false;
-
-    // Update login ID if provided
     if (newLoginId.trim()) {
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newLoginId.trim())) {
-        toast.error('Please enter a valid email for the new Login ID');
-        return;
-      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newLoginId.trim())) { toast.error('Please enter a valid email for the new Login ID'); return; }
       setAdminEmail(newLoginId.trim());
       changed = true;
     }
-
-    // Update password if provided
     if (newPassword) {
       if (newPassword.length < 6) { toast.error('New password must be at least 6 characters'); return; }
       if (newPassword !== confirmPassword) { toast.error('New passwords do not match'); return; }
       setAdminPassword(newPassword);
       changed = true;
     }
-
     if (!changed) { toast.error('Please enter a new Login ID or new password'); return; }
-
     setCurrentPassword(''); setNewLoginId(''); setNewPassword(''); setConfirmPassword('');
     toast.success('Credentials updated successfully');
   };
@@ -201,91 +182,59 @@ function DraggableCard({
 }) {
   const isDragging = draggingIdx === index;
   const isOver = dragOverIdx === index && draggingIdx !== index;
-
   return (
-    <div
-      draggable
-      onDragStart={handleDragStart(index)}
-      onDragEnter={handleDragEnter(index)}
-      onDragOver={handleDragOver}
-      onDrop={handleDrop}
-      onDragEnd={handleDragEnd}
-      className={`transition-all duration-200 rounded-lg ${isDragging ? 'opacity-40 scale-[0.98]' : ''} ${isOver ? 'ring-2 ring-primary/50 ring-offset-2' : ''}`}
-    >
+    <div draggable onDragStart={handleDragStart(index)} onDragEnter={handleDragEnter(index)} onDragOver={handleDragOver} onDrop={handleDrop} onDragEnd={handleDragEnd}
+      className={`transition-all duration-200 rounded-lg ${isDragging ? 'opacity-40 scale-[0.98]' : ''} ${isOver ? 'ring-2 ring-primary/50 ring-offset-2' : ''}`}>
       <Card className="shadow-sm hover:shadow-md transition-shadow">
-        <CardContent className="py-4">
-          {children}
-        </CardContent>
+        <CardContent className="py-4">{children}</CardContent>
       </Card>
     </div>
   );
 }
 
-// ─── Upcoming Events Editor ──────────────────────────────────────────
+// ─── Upcoming Events Editor (draft-based) ────────────────────────────
 function UpcomingEventsEditor() {
-  const { siteData, updateSiteData } = useSiteData();
-  const [events, setEvents] = useState<UpcomingEvent[]>(siteData.upcomingEvents);
+  const { draft, setDraft } = useDraft();
+  const events = draft.upcomingEvents;
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newEvent, setNewEvent] = useState<Partial<UpcomingEvent>>({ title: '', date: '', type: 'Classes', description: '' });
 
-  useEffect(() => { setEvents(siteData.upcomingEvents); }, [siteData.upcomingEvents]);
-
-  const save = (updated: UpcomingEvent[]) => { setEvents(updated); updateSiteData({ upcomingEvents: updated }); };
+  const setEvents = (updated: UpcomingEvent[]) => setDraft(prev => ({ ...prev, upcomingEvents: updated }));
 
   const handleAdd = () => {
     if (!newEvent.title || !newEvent.date || !newEvent.type) { toast.error('Please fill in all required fields'); return; }
-    save([...events, { id: generateId(), title: newEvent.title!, date: newEvent.date!, type: newEvent.type!, description: newEvent.description }]);
+    setEvents([...events, { id: generateId(), title: newEvent.title!, date: newEvent.date!, type: newEvent.type!, description: newEvent.description }]);
     setNewEvent({ title: '', date: '', type: 'Classes', description: '' });
-    toast.success('Event added');
+    toast.info('Event added to draft — click Update to publish');
   };
 
-  const handleUpdate = (id: string, data: Partial<UpcomingEvent>) => save(events.map((e) => (e.id === id ? { ...e, ...data } : e)));
-
-  const handleDelete = (id: string) => {
-    if (confirm('Delete this event?')) { save(events.filter((e) => e.id !== id)); toast.success('Event deleted'); }
-  };
-
-  const drag = useDragReorder(events, (reordered) => save(reordered));
+  const handleUpdate = (id: string, data: Partial<UpcomingEvent>) => setEvents(events.map((e) => (e.id === id ? { ...e, ...data } : e)));
+  const handleDelete = (id: string) => { if (confirm('Delete this event?')) { setEvents(events.filter((e) => e.id !== id)); toast.info('Event removed — click Update to publish'); } };
+  const drag = useDragReorder(events, setEvents);
 
   return (
     <div className="space-y-6">
       <Card className="shadow-sm border-dashed border-2 border-primary/20 bg-primary/[0.02]">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2"><Plus className="h-5 w-5 text-primary" /> Add New Event</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Plus className="h-5 w-5 text-primary" /> Add New Event</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Event Title *</Label>
-              <Input value={newEvent.title || ''} onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })} placeholder="Spring Group Classes Begin" />
-            </div>
-            <div className="space-y-2">
-              <Label>Date *</Label>
-              <Input value={newEvent.date || ''} onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })} placeholder="Mar 15, 2026" />
-            </div>
-            <div className="space-y-2">
-              <Label>Category *</Label>
+            <div className="space-y-2"><Label>Event Title *</Label><Input value={newEvent.title || ''} onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })} placeholder="Spring Group Classes Begin" /></div>
+            <div className="space-y-2"><Label>Date *</Label><Input value={newEvent.date || ''} onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })} placeholder="Mar 15, 2026" /></div>
+            <div className="space-y-2"><Label>Category *</Label>
               <Select value={newEvent.type || 'Classes'} onValueChange={(v) => setNewEvent({ ...newEvent, type: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Classes">Classes</SelectItem>
-                  <SelectItem value="Camp">Camp</SelectItem>
-                  <SelectItem value="Workshop">Workshop</SelectItem>
-                  <SelectItem value="Tournament">Tournament</SelectItem>
+                  <SelectItem value="Classes">Classes</SelectItem><SelectItem value="Camp">Camp</SelectItem>
+                  <SelectItem value="Workshop">Workshop</SelectItem><SelectItem value="Tournament">Tournament</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label>Description (optional)</Label>
-              <Input value={newEvent.description || ''} onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })} placeholder="Optional description" />
-            </div>
+            <div className="space-y-2"><Label>Description (optional)</Label><Input value={newEvent.description || ''} onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })} placeholder="Optional description" /></div>
           </div>
           <Button onClick={handleAdd} className="font-semibold"><Plus className="h-4 w-4 mr-1" /> Add Event</Button>
         </CardContent>
       </Card>
-
       <p className="text-xs text-muted-foreground flex items-center gap-1"><GripVertical className="h-3 w-3" /> Drag cards to reorder</p>
-
       <div className="space-y-3">
         {events.map((event, index) => (
           <DraggableCard key={event.id} index={index} {...drag}>
@@ -296,12 +245,7 @@ function UpcomingEventsEditor() {
                   <Input value={event.date} onChange={(e) => handleUpdate(event.id, { date: e.target.value })} placeholder="Date" />
                   <Select value={event.type} onValueChange={(v) => handleUpdate(event.id, { type: v })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Classes">Classes</SelectItem>
-                      <SelectItem value="Camp">Camp</SelectItem>
-                      <SelectItem value="Workshop">Workshop</SelectItem>
-                      <SelectItem value="Tournament">Tournament</SelectItem>
-                    </SelectContent>
+                    <SelectContent><SelectItem value="Classes">Classes</SelectItem><SelectItem value="Camp">Camp</SelectItem><SelectItem value="Workshop">Workshop</SelectItem><SelectItem value="Tournament">Tournament</SelectItem></SelectContent>
                   </Select>
                 </div>
                 <Input value={event.description || ''} onChange={(e) => handleUpdate(event.id, { description: e.target.value })} placeholder="Description (optional)" />
@@ -309,20 +253,14 @@ function UpcomingEventsEditor() {
               </div>
             ) : (
               <div className="flex items-center gap-3">
-                <div className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground transition-colors p-1">
-                  <GripVertical className="h-5 w-5" />
-                </div>
+                <div className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground transition-colors p-1"><GripVertical className="h-5 w-5" /></div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-foreground">{event.title}</p>
                   <p className="text-sm text-muted-foreground">{event.date} · {event.type}</p>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setEditingId(event.id)} className="gap-1.5">
-                    <Pencil className="h-3.5 w-3.5" /> Edit
-                  </Button>
-                  <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => handleDelete(event.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => setEditingId(event.id)} className="gap-1.5"><Pencil className="h-3.5 w-3.5" /> Edit</Button>
+                  <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => handleDelete(event.id)}><Trash2 className="h-4 w-4" /></Button>
                 </div>
               </div>
             )}
@@ -333,72 +271,51 @@ function UpcomingEventsEditor() {
   );
 }
 
-// ─── Programs Editor ─────────────────────────────────────────────────
+// ─── Programs Editor (draft-based) ──────────────────────────────────
 function ProgramsEditor() {
-  const { siteData, updateSiteData } = useSiteData();
-  const [programs, setPrograms] = useState<Program[]>(siteData.programs);
+  const { draft, setDraft } = useDraft();
+  const programs = draft.programs;
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newProgram, setNewProgram] = useState<Partial<Program>>({ title: '', description: '', iconType: 'users' });
 
-  useEffect(() => { setPrograms(siteData.programs); }, [siteData.programs]);
-
-  const save = (updated: Program[]) => { setPrograms(updated); updateSiteData({ programs: updated }); };
+  const setPrograms = (updated: Program[]) => setDraft(prev => ({ ...prev, programs: updated }));
 
   const handleAdd = () => {
     if (!newProgram.title || !newProgram.description) { toast.error('Please fill in all required fields'); return; }
-    save([...programs, { id: generateId(), title: newProgram.title!, description: newProgram.description!, iconType: newProgram.iconType || 'users' }]);
+    setPrograms([...programs, { id: generateId(), title: newProgram.title!, description: newProgram.description!, iconType: newProgram.iconType || 'users' }]);
     setNewProgram({ title: '', description: '', iconType: 'users' });
-    toast.success('Program added');
+    toast.info('Program added to draft — click Update to publish');
   };
 
-  const handleUpdate = (id: string, data: Partial<Program>) => save(programs.map((p) => (p.id === id ? { ...p, ...data } : p)));
-
-  const handleDelete = (id: string) => {
-    if (confirm('Delete this program?')) { save(programs.filter((p) => p.id !== id)); toast.success('Program deleted'); }
-  };
-
-  const drag = useDragReorder(programs, (reordered) => save(reordered));
+  const handleUpdate = (id: string, data: Partial<Program>) => setPrograms(programs.map((p) => (p.id === id ? { ...p, ...data } : p)));
+  const handleDelete = (id: string) => { if (confirm('Delete this program?')) { setPrograms(programs.filter((p) => p.id !== id)); toast.info('Program removed — click Update to publish'); } };
+  const drag = useDragReorder(programs, setPrograms);
 
   const iconOptions = [
-    { value: 'users', label: 'Group (Users)' },
-    { value: 'user', label: 'Individual (User)' },
-    { value: 'monitor', label: 'Online (Monitor)' },
-    { value: 'layers', label: 'Levels (Layers)' },
+    { value: 'users', label: 'Group (Users)' }, { value: 'user', label: 'Individual (User)' },
+    { value: 'monitor', label: 'Online (Monitor)' }, { value: 'layers', label: 'Levels (Layers)' },
     { value: 'swords', label: 'Competition (Swords)' },
   ];
 
   return (
     <div className="space-y-6">
       <Card className="shadow-sm border-dashed border-2 border-primary/20 bg-primary/[0.02]">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2"><Plus className="h-5 w-5 text-primary" /> Add New Program</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Plus className="h-5 w-5 text-primary" /> Add New Program</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Program Title *</Label>
-              <Input value={newProgram.title || ''} onChange={(e) => setNewProgram({ ...newProgram, title: e.target.value })} placeholder="Group Classes" />
-            </div>
-            <div className="space-y-2">
-              <Label>Icon Type</Label>
+            <div className="space-y-2"><Label>Program Title *</Label><Input value={newProgram.title || ''} onChange={(e) => setNewProgram({ ...newProgram, title: e.target.value })} placeholder="Group Classes" /></div>
+            <div className="space-y-2"><Label>Icon Type</Label>
               <Select value={newProgram.iconType || 'users'} onValueChange={(v: Program['iconType']) => setNewProgram({ ...newProgram, iconType: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {iconOptions.map((opt) => (<SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>))}
-                </SelectContent>
+                <SelectContent>{iconOptions.map((opt) => (<SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>))}</SelectContent>
               </Select>
             </div>
           </div>
-          <div className="space-y-2">
-            <Label>Description *</Label>
-            <Textarea value={newProgram.description || ''} onChange={(e) => setNewProgram({ ...newProgram, description: e.target.value })} placeholder="Learn alongside peers..." rows={3} />
-          </div>
+          <div className="space-y-2"><Label>Description *</Label><Textarea value={newProgram.description || ''} onChange={(e) => setNewProgram({ ...newProgram, description: e.target.value })} placeholder="Learn alongside peers..." rows={3} /></div>
           <Button onClick={handleAdd} className="font-semibold"><Plus className="h-4 w-4 mr-1" /> Add Program</Button>
         </CardContent>
       </Card>
-
       <p className="text-xs text-muted-foreground flex items-center gap-1"><GripVertical className="h-3 w-3" /> Drag cards to reorder</p>
-
       <div className="space-y-3">
         {programs.map((program, index) => (
           <DraggableCard key={program.id} index={index} {...drag}>
@@ -408,9 +325,7 @@ function ProgramsEditor() {
                   <Input value={program.title} onChange={(e) => handleUpdate(program.id, { title: e.target.value })} placeholder="Title" />
                   <Select value={program.iconType} onValueChange={(v: Program['iconType']) => handleUpdate(program.id, { iconType: v })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {iconOptions.map((opt) => (<SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>))}
-                    </SelectContent>
+                    <SelectContent>{iconOptions.map((opt) => (<SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>))}</SelectContent>
                   </Select>
                 </div>
                 <Textarea value={program.description} onChange={(e) => handleUpdate(program.id, { description: e.target.value })} rows={3} />
@@ -418,20 +333,14 @@ function ProgramsEditor() {
               </div>
             ) : (
               <div className="flex items-start gap-3">
-                <div className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground transition-colors p-1 pt-1">
-                  <GripVertical className="h-5 w-5" />
-                </div>
+                <div className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground transition-colors p-1 pt-1"><GripVertical className="h-5 w-5" /></div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-foreground">{program.title}</p>
                   <p className="text-sm text-muted-foreground line-clamp-2">{program.description}</p>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setEditingId(program.id)} className="gap-1.5">
-                    <Pencil className="h-3.5 w-3.5" /> Edit
-                  </Button>
-                  <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => handleDelete(program.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => setEditingId(program.id)} className="gap-1.5"><Pencil className="h-3.5 w-3.5" /> Edit</Button>
+                  <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => handleDelete(program.id)}><Trash2 className="h-4 w-4" /></Button>
                 </div>
               </div>
             )}
@@ -442,79 +351,55 @@ function ProgramsEditor() {
   );
 }
 
-// ─── Event Sections Editor ───────────────────────────────────────────
+// ─── Event Sections Editor (draft-based) ─────────────────────────────
 function EventSectionsEditor() {
-  const { siteData, updateSiteData } = useSiteData();
-  const [sections, setSections] = useState<EventSection[]>(siteData.eventSections);
-  const [pastBootcamp, setPastBootcamp] = useState(siteData.pastBootcamp);
+  const { draft, setDraft } = useDraft();
+  const sections = draft.eventSections;
+  const pastBootcamp = draft.pastBootcamp;
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingBootcamp, setEditingBootcamp] = useState(false);
   const [newSection, setNewSection] = useState<Partial<EventSection>>({ title: '', description: '', iconType: 'tent' });
 
-  useEffect(() => { setSections(siteData.eventSections); setPastBootcamp(siteData.pastBootcamp); }, [siteData.eventSections, siteData.pastBootcamp]);
-
-  const save = (updated: EventSection[]) => { setSections(updated); updateSiteData({ eventSections: updated }); };
+  const setSections = (updated: EventSection[]) => setDraft(prev => ({ ...prev, eventSections: updated }));
+  const setPastBootcamp = (updated: PastBootcamp) => setDraft(prev => ({ ...prev, pastBootcamp: updated }));
 
   const handleAdd = () => {
     if (!newSection.title || !newSection.description) { toast.error('Please fill in all required fields'); return; }
-    save([...sections, { id: generateId(), title: newSection.title!, description: newSection.description!, iconType: newSection.iconType || 'tent' }]);
+    setSections([...sections, { id: generateId(), title: newSection.title!, description: newSection.description!, iconType: newSection.iconType || 'tent' }]);
     setNewSection({ title: '', description: '', iconType: 'tent' });
-    toast.success('Section added');
+    toast.info('Section added to draft — click Update to publish');
   };
 
-  const handleUpdate = (id: string, data: Partial<EventSection>) => save(sections.map((s) => (s.id === id ? { ...s, ...data } : s)));
+  const handleUpdate = (id: string, data: Partial<EventSection>) => setSections(sections.map((s) => (s.id === id ? { ...s, ...data } : s)));
+  const handleDelete = (id: string) => { if (confirm('Delete this section?')) { setSections(sections.filter((s) => s.id !== id)); toast.info('Section removed — click Update to publish'); } };
+  const handleBootcampUpdate = (data: Partial<PastBootcamp>) => setPastBootcamp({ ...pastBootcamp, ...data });
 
-  const handleDelete = (id: string) => {
-    if (confirm('Delete this section?')) { save(sections.filter((s) => s.id !== id)); toast.success('Section deleted'); }
-  };
-
-  const handleBootcampUpdate = (data: Partial<typeof pastBootcamp>) => {
-    const updated = { ...pastBootcamp, ...data };
-    setPastBootcamp(updated);
-    updateSiteData({ pastBootcamp: updated });
-  };
-
-  const drag = useDragReorder(sections, (reordered) => save(reordered));
+  const drag = useDragReorder(sections, setSections);
 
   const iconOptions = [
-    { value: 'tent', label: 'Camp (Tent)' },
-    { value: 'trophy', label: 'Tournament (Trophy)' },
-    { value: 'lightbulb', label: 'Workshop (Lightbulb)' },
-    { value: 'info', label: 'Info' },
+    { value: 'tent', label: 'Camp (Tent)' }, { value: 'trophy', label: 'Tournament (Trophy)' },
+    { value: 'lightbulb', label: 'Workshop (Lightbulb)' }, { value: 'info', label: 'Info' },
   ];
 
   return (
     <div className="space-y-6">
       <Card className="shadow-sm border-dashed border-2 border-primary/20 bg-primary/[0.02]">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2"><Plus className="h-5 w-5 text-primary" /> Add New Event Section</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Plus className="h-5 w-5 text-primary" /> Add New Event Section</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Section Title *</Label>
-              <Input value={newSection.title || ''} onChange={(e) => setNewSection({ ...newSection, title: e.target.value })} placeholder="Summer Camps" />
-            </div>
-            <div className="space-y-2">
-              <Label>Icon Type</Label>
+            <div className="space-y-2"><Label>Section Title *</Label><Input value={newSection.title || ''} onChange={(e) => setNewSection({ ...newSection, title: e.target.value })} placeholder="Summer Camps" /></div>
+            <div className="space-y-2"><Label>Icon Type</Label>
               <Select value={newSection.iconType || 'tent'} onValueChange={(v: EventSection['iconType']) => setNewSection({ ...newSection, iconType: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {iconOptions.map((opt) => (<SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>))}
-                </SelectContent>
+                <SelectContent>{iconOptions.map((opt) => (<SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>))}</SelectContent>
               </Select>
             </div>
           </div>
-          <div className="space-y-2">
-            <Label>Description *</Label>
-            <Textarea value={newSection.description || ''} onChange={(e) => setNewSection({ ...newSection, description: e.target.value })} placeholder="Immersive multi-day chess bootcamps..." rows={2} />
-          </div>
+          <div className="space-y-2"><Label>Description *</Label><Textarea value={newSection.description || ''} onChange={(e) => setNewSection({ ...newSection, description: e.target.value })} placeholder="Immersive multi-day chess bootcamps..." rows={2} /></div>
           <Button onClick={handleAdd} className="font-semibold"><Plus className="h-4 w-4 mr-1" /> Add Section</Button>
         </CardContent>
       </Card>
-
       <p className="text-xs text-muted-foreground flex items-center gap-1"><GripVertical className="h-3 w-3" /> Drag cards to reorder</p>
-
       <div className="space-y-3">
         {sections.map((section, index) => (
           <DraggableCard key={section.id} index={index} {...drag}>
@@ -524,9 +409,7 @@ function EventSectionsEditor() {
                   <Input value={section.title} onChange={(e) => handleUpdate(section.id, { title: e.target.value })} placeholder="Title" />
                   <Select value={section.iconType} onValueChange={(v: EventSection['iconType']) => handleUpdate(section.id, { iconType: v })}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {iconOptions.map((opt) => (<SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>))}
-                    </SelectContent>
+                    <SelectContent>{iconOptions.map((opt) => (<SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>))}</SelectContent>
                   </Select>
                 </div>
                 <Textarea value={section.description} onChange={(e) => handleUpdate(section.id, { description: e.target.value })} rows={2} />
@@ -534,20 +417,14 @@ function EventSectionsEditor() {
               </div>
             ) : (
               <div className="flex items-start gap-3">
-                <div className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground transition-colors p-1 pt-1">
-                  <GripVertical className="h-5 w-5" />
-                </div>
+                <div className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground transition-colors p-1 pt-1"><GripVertical className="h-5 w-5" /></div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-foreground">{section.title}</p>
                   <p className="text-sm text-muted-foreground line-clamp-2">{section.description}</p>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setEditingId(section.id)} className="gap-1.5">
-                    <Pencil className="h-3.5 w-3.5" /> Edit
-                  </Button>
-                  <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => handleDelete(section.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => setEditingId(section.id)} className="gap-1.5"><Pencil className="h-3.5 w-3.5" /> Edit</Button>
+                  <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => handleDelete(section.id)}><Trash2 className="h-4 w-4" /></Button>
                 </div>
               </div>
             )}
@@ -557,37 +434,20 @@ function EventSectionsEditor() {
 
       {/* Past Bootcamp Section */}
       <Card className="shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <BookOpen className="h-5 w-5 text-primary" /> Past Bootcamp Section
-          </CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle className="text-lg flex items-center gap-2"><BookOpen className="h-5 w-5 text-primary" /> Past Bootcamp Section</CardTitle></CardHeader>
         <CardContent>
           {editingBootcamp ? (
             <div className="space-y-3">
-              <div className="space-y-2">
-                <Label>Title</Label>
-                <Input value={pastBootcamp.title} onChange={(e) => handleBootcampUpdate({ title: e.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <Label>Paragraph 1</Label>
-                <Textarea value={pastBootcamp.paragraphs[0] || ''} onChange={(e) => handleBootcampUpdate({ paragraphs: [e.target.value, pastBootcamp.paragraphs[1] || ''] })} rows={3} />
-              </div>
-              <div className="space-y-2">
-                <Label>Paragraph 2</Label>
-                <Textarea value={pastBootcamp.paragraphs[1] || ''} onChange={(e) => handleBootcampUpdate({ paragraphs: [pastBootcamp.paragraphs[0] || '', e.target.value] })} rows={3} />
-              </div>
+              <div className="space-y-2"><Label>Title</Label><Input value={pastBootcamp.title} onChange={(e) => handleBootcampUpdate({ title: e.target.value })} /></div>
+              <div className="space-y-2"><Label>Paragraph 1</Label><Textarea value={pastBootcamp.paragraphs[0] || ''} onChange={(e) => handleBootcampUpdate({ paragraphs: [e.target.value, pastBootcamp.paragraphs[1] || ''] })} rows={3} /></div>
+              <div className="space-y-2"><Label>Paragraph 2</Label><Textarea value={pastBootcamp.paragraphs[1] || ''} onChange={(e) => handleBootcampUpdate({ paragraphs: [pastBootcamp.paragraphs[0] || '', e.target.value] })} rows={3} /></div>
               <Button size="sm" onClick={() => setEditingBootcamp(false)} className="font-semibold"><Save className="h-4 w-4 mr-1" /> Done</Button>
             </div>
           ) : (
             <div>
               <p className="font-medium text-foreground mb-2">{pastBootcamp.title}</p>
-              {pastBootcamp.paragraphs.map((p, i) => (
-                <p key={i} className="text-sm text-muted-foreground mb-2">{p}</p>
-              ))}
-              <Button variant="outline" size="sm" onClick={() => setEditingBootcamp(true)} className="gap-1.5 mt-1">
-                <Pencil className="h-3.5 w-3.5" /> Edit
-              </Button>
+              {pastBootcamp.paragraphs.map((p, i) => (<p key={i} className="text-sm text-muted-foreground mb-2">{p}</p>))}
+              <Button variant="outline" size="sm" onClick={() => setEditingBootcamp(true)} className="gap-1.5 mt-1"><Pencil className="h-3.5 w-3.5" /> Edit</Button>
             </div>
           )}
         </CardContent>
@@ -599,7 +459,27 @@ function EventSectionsEditor() {
 // ─── Main Admin Panel ────────────────────────────────────────────────
 function AdminPanel() {
   const navigate = useNavigate();
-  const { resetToDefault } = useSiteData();
+  const { siteData, updateSiteData, resetToDefault } = useSiteData();
+
+  // Draft state — changes here do NOT affect the live site until "Update" is clicked
+  const [draft, setDraft] = useState<SiteData>(siteData);
+
+  // Re-sync draft when siteData changes (e.g. after reset)
+  useEffect(() => { setDraft(siteData); }, [siteData]);
+
+  const hasChanges = JSON.stringify(draft) !== JSON.stringify(siteData);
+
+  const handlePublish = () => {
+    updateSiteData(draft);
+    toast.success('All changes published! The site is now updated.');
+  };
+
+  const handleDiscard = () => {
+    if (confirm('Discard all unpublished changes?')) {
+      setDraft(siteData);
+      toast.info('Changes discarded');
+    }
+  };
 
   const handleLogout = () => { setAdminLoggedIn(false); navigate('/'); };
 
@@ -611,58 +491,70 @@ function AdminPanel() {
   };
 
   return (
-    <div className="min-h-screen bg-secondary/30">
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <LayoutGrid className="h-5 w-5" />
+    <DraftContext.Provider value={{ draft, setDraft, hasChanges }}>
+      <div className="min-h-screen bg-secondary/30">
+        <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="container flex h-16 items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                <LayoutGrid className="h-5 w-5" />
+              </div>
+              <h1 className="font-display text-xl font-bold text-foreground">Admin Panel</h1>
+              {hasChanges && (
+                <span className="flex items-center gap-1 text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-0.5">
+                  <AlertCircle className="h-3 w-3" /> Unsaved changes
+                </span>
+              )}
             </div>
-            <h1 className="font-display text-xl font-bold text-foreground">Admin Panel</h1>
+            <div className="flex items-center gap-2">
+              {hasChanges && (
+                <Button variant="ghost" size="sm" onClick={handleDiscard} className="gap-1.5 text-muted-foreground">
+                  Discard
+                </Button>
+              )}
+              <Button
+                size="sm"
+                onClick={handlePublish}
+                disabled={!hasChanges}
+                className={`gap-1.5 font-semibold transition-all ${hasChanges ? 'bg-green-600 hover:bg-green-700 text-white shadow-md animate-pulse' : 'bg-primary hover:bg-primary/90'}`}
+              >
+                <CheckCircle className="h-4 w-4" /> Update
+              </Button>
+              <Button variant="outline" size="sm" asChild className="gap-1.5">
+                <a href="/" target="_blank"><Eye className="h-4 w-4" /> View Site</a>
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleReset} className="gap-1.5 text-destructive hover:text-destructive">
+                <RotateCcw className="h-4 w-4" /> Reset
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleLogout} className="gap-1.5">
+                <LogOut className="h-4 w-4" /> Logout
+              </Button>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button size="sm" onClick={() => { toast.success('All changes are live! Refresh the site to see updates.'); }} className="gap-1.5 font-semibold bg-primary hover:bg-primary/90">
-              <CheckCircle className="h-4 w-4" /> Update
-            </Button>
-            <Button variant="outline" size="sm" asChild className="gap-1.5">
-              <a href="/" target="_blank"><Eye className="h-4 w-4" /> View Site</a>
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleReset} className="gap-1.5 text-destructive hover:text-destructive">
-              <RotateCcw className="h-4 w-4" /> Reset
-            </Button>
-            <Button variant="ghost" size="sm" onClick={handleLogout} className="gap-1.5">
-              <LogOut className="h-4 w-4" /> Logout
-            </Button>
-          </div>
-        </div>
-      </header>
+        </header>
 
-      <main className="container py-8 max-w-4xl">
-        <Tabs defaultValue="events" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 h-12">
-            <TabsTrigger value="events" className="gap-1.5 text-xs sm:text-sm"><Calendar className="h-4 w-4 hidden sm:block" /> Events</TabsTrigger>
-            <TabsTrigger value="programs" className="gap-1.5 text-xs sm:text-sm"><BookOpen className="h-4 w-4 hidden sm:block" /> Programs</TabsTrigger>
-            <TabsTrigger value="event-sections" className="gap-1.5 text-xs sm:text-sm"><LayoutGrid className="h-4 w-4 hidden sm:block" /> Events Page</TabsTrigger>
-            <TabsTrigger value="settings" className="gap-1.5 text-xs sm:text-sm"><Lock className="h-4 w-4 hidden sm:block" /> Settings</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="events"><UpcomingEventsEditor /></TabsContent>
-          <TabsContent value="programs"><ProgramsEditor /></TabsContent>
-          <TabsContent value="event-sections"><EventSectionsEditor /></TabsContent>
-          <TabsContent value="settings"><ChangeCredentialsSection /></TabsContent>
-        </Tabs>
-      </main>
-    </div>
+        <main className="container py-8 max-w-4xl">
+          <Tabs defaultValue="events" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-4 h-12">
+              <TabsTrigger value="events" className="gap-1.5 text-xs sm:text-sm"><Calendar className="h-4 w-4 hidden sm:block" /> Events</TabsTrigger>
+              <TabsTrigger value="programs" className="gap-1.5 text-xs sm:text-sm"><BookOpen className="h-4 w-4 hidden sm:block" /> Programs</TabsTrigger>
+              <TabsTrigger value="event-sections" className="gap-1.5 text-xs sm:text-sm"><LayoutGrid className="h-4 w-4 hidden sm:block" /> Events Page</TabsTrigger>
+              <TabsTrigger value="settings" className="gap-1.5 text-xs sm:text-sm"><Lock className="h-4 w-4 hidden sm:block" /> Settings</TabsTrigger>
+            </TabsList>
+            <TabsContent value="events"><UpcomingEventsEditor /></TabsContent>
+            <TabsContent value="programs"><ProgramsEditor /></TabsContent>
+            <TabsContent value="event-sections"><EventSectionsEditor /></TabsContent>
+            <TabsContent value="settings"><ChangeCredentialsSection /></TabsContent>
+          </Tabs>
+        </main>
+      </div>
+    </DraftContext.Provider>
   );
 }
 
 // ─── Main Admin Page ─────────────────────────────────────────────────
 export default function Admin() {
   const [isLoggedIn, setIsLoggedIn] = useState(isAdminLoggedIn());
-
-  if (!isLoggedIn) {
-    return <AdminLogin onLogin={() => setIsLoggedIn(true)} />;
-  }
-
+  if (!isLoggedIn) return <AdminLogin onLogin={() => setIsLoggedIn(true)} />;
   return <AdminPanel />;
 }
