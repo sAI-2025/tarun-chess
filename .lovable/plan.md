@@ -1,60 +1,62 @@
 
-# Chess Academy Website
 
-A warm, approachable informational website for Tarun's Chess Academy — designed to attract parents and students, showcase programs, and direct visitors to external registration.
+# Plan: Dynamic About Page Content via Admin Panel
 
----
+## Summary
+Add `aboutPage` data to the existing `SiteData` object, make the About page render from that data instead of hardcoded text, and add an "About Page" tab in the Admin panel for editing all sections.
 
-## Pages & Structure
+## Changes
 
-### 1. Home
-- **Hero section** with a welcoming headline, chess-themed imagery (placeholder), and tagline about building confident chess players
-- **Three feature cards**: Classes, Camps, Tournaments — each with an icon and brief description
-- **Call-to-action buttons**: "Join Now" and "Book a Class" linking to the Contact page
-- **Upcoming Events preview** showing 2–3 nearest events with dates
+### 1. Extend data model (`src/lib/siteData.ts`)
 
-### 2. About Us
-Tabbed or scrolling sub-sections:
-- **Our Story** — the founding philosophy and teaching approach (content provided)
-- **Mission & Vision** — concise goals for chess education
-- **Meet Tarun** — bio, photo placeholder, achievements (two-time state champion, assistant TD)
-- **Why Choose Us** — teaching style highlights: fundamentals-first, patient instruction, structured learning
+Add new interfaces and extend `SiteData`:
 
-### 3. Programs
-Clean card-based layout for each offering:
-- Group Classes
-- One-on-One Training
-- Online Coaching
-- Beginner & Intermediate levels
-- Tournament Preparation
+```ts
+export interface AboutFeature {
+  id: string;
+  title: string;
+  description: string;
+  iconType: 'book' | 'target' | 'star' | 'user';
+}
 
-Each card includes a brief description and a "Learn More" or "Sign Up" button linking to the Contact page.
+export interface AboutPageData {
+  storyTitle: string;
+  storyParagraphs: string[];
+  missionTitle: string;
+  missionText: string;
+  visionTitle: string;
+  visionText: string;
+  coachSectionTitle: string;
+  coachName: string;
+  coachParagraphs: string[];
+  features: AboutFeature[];
+}
+```
 
-### 4. Events
-- **Summer Camps** section with details and past bootcamp info (VTSEVA volunteer camp story)
-- **Tournaments** section
-- **Workshops & Special Events**
-- **Event Calendar** — a visual monthly calendar showing upcoming events
-- **Registration Info** — links to external Google Forms for sign-up
+Add `aboutPage: AboutPageData` to `SiteData` with current hardcoded text as defaults.
 
-### 5. Blog *(placeholder)*
-- A simple "Coming Soon" page to hold the spot in navigation
+### 2. Update About page (`src/pages/About.tsx`)
 
-### 6. Contact Us
-- **Contact form** (name, email, message) with validation
-- **Contact details**: email (taruntubati9@gmail.com), phone placeholder, WhatsApp link
-- Toast notification on form submission (no backend — just confirmation UI for now)
+- Import `useSiteData` and read `siteData.aboutPage`
+- Replace all hardcoded strings with data from the context:
+  - Story title and paragraphs mapped dynamically
+  - Mission/Vision titles and text
+  - Coach name and description paragraphs
+  - Why Choose Us cards mapped from `features` array
+- Keep all existing layout, animations, styling, and icons exactly as-is
 
----
+### 3. Add About Page editor tab in Admin (`src/pages/Admin.tsx`)
 
-## Design & Style
-- **Warm & approachable** palette: soft cream/warm white background, friendly navy/teal primary color, warm amber accents
-- Rounded corners, soft shadows, inviting typography
-- Chess piece icons/illustrations as decorative elements
-- Fully responsive — mobile-friendly navigation with hamburger menu
-- Smooth scroll animations between sections
+- Add new `AboutPageEditor` component following the same draft-based pattern as other editors
+- Sections inside the editor:
+  - **Our Story**: title input + multi-line textarea (paragraphs separated by blank lines)
+  - **Mission & Vision**: title + text inputs for each
+  - **Meet the Coach**: section title, coach name, description textarea
+  - **Why Choose Us Features**: list with add/edit/delete/drag-reorder using existing `DraggableCard` and `useDragReorder` patterns
+- Add a 5th tab "About Page" to the `TabsList` (change `grid-cols-4` to `grid-cols-5`)
 
-## Navigation
-- **Top navigation bar** with logo placeholder + links: Home, About Us, Programs, Events, Blog, Contact Us
-- Mobile: collapsible hamburger menu
-- Sticky header for easy access while scrolling
+### 4. No changes to
+- Visual layout, colors, typography, spacing, card design on About page
+- Existing admin tabs or data flow
+- SiteDataContext (already handles partial updates)
+
