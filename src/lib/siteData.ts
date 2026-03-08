@@ -152,7 +152,7 @@ export function setAdminPassword(password: string): void {
     console.error('Error saving admin password:', e);
   }
 }
-
+export function getAdminEmail(): string {
   try {
     const stored = localStorage.getItem(ADMIN_EMAIL_KEY);
     if (stored) return stored;
