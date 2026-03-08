@@ -157,9 +157,30 @@ export function setAdminPassword(password: string): void {
   }
 }
 
+export function getAdminEmail(): string {
+  try {
+    const stored = localStorage.getItem(ADMIN_EMAIL_KEY);
+    if (stored) {
+      return stored;
+    }
+  } catch (e) {
+    console.error('Error loading admin email:', e);
+  }
+  return DEFAULT_ADMIN_EMAIL;
+}
+
+export function setAdminEmail(email: string): void {
+  try {
+    localStorage.setItem(ADMIN_EMAIL_KEY, email);
+  } catch (e) {
+    console.error('Error saving admin email:', e);
+  }
+}
+
 export function validateAdmin(email: string, password: string): boolean {
   const currentPassword = getAdminPassword();
-  return email === DEFAULT_ADMIN_EMAIL && password === currentPassword;
+  const currentEmail = getAdminEmail();
+  return email === currentEmail && password === currentPassword;
 }
 
 export function isAdminLoggedIn(): boolean {
