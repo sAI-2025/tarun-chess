@@ -1,71 +1,60 @@
 
+# Chess Academy Website
 
-# Performance Optimization Plan
+A warm, approachable informational website for Tarun's Chess Academy — designed to attract parents and students, showcase programs, and direct visitors to external registration.
 
-## Analysis
+---
 
-The site is a relatively small React SPA with:
-- 2 static images (hero banner JPG, coach photo JPEG) 
-- Framer Motion used on every page
-- Admin page (1066 lines) loaded eagerly with all routes
-- All pages imported synchronously in App.tsx
-- localStorage read once on mount via SiteDataContext (already good)
-- Google Fonts loaded via CSS @import (render-blocking)
-- No code splitting
+## Pages & Structure
 
-## Optimizations
+### 1. Home
+- **Hero section** with a welcoming headline, chess-themed imagery (placeholder), and tagline about building confident chess players
+- **Three feature cards**: Classes, Camps, Tournaments — each with an icon and brief description
+- **Call-to-action buttons**: "Join Now" and "Book a Class" linking to the Contact page
+- **Upcoming Events preview** showing 2–3 nearest events with dates
 
-### 1. Code Splitting — Route-level lazy loading (`src/App.tsx`)
+### 2. About Us
+Tabbed or scrolling sub-sections:
+- **Our Story** — the founding philosophy and teaching approach (content provided)
+- **Mission & Vision** — concise goals for chess education
+- **Meet Tarun** — bio, photo placeholder, achievements (two-time state champion, assistant TD)
+- **Why Choose Us** — teaching style highlights: fundamentals-first, patient instruction, structured learning
 
-Replace all page imports with `React.lazy()` + `Suspense`:
-- `lazy(() => import('./pages/Index'))`
-- `lazy(() => import('./pages/About'))`
-- `lazy(() => import('./pages/Programs'))`
-- `lazy(() => import('./pages/Events'))`
-- `lazy(() => import('./pages/Contact'))`
-- `lazy(() => import('./pages/Admin'))` — biggest win, keeps 1000+ line admin bundle off public pages
-- `lazy(() => import('./pages/NotFound'))`
+### 3. Programs
+Clean card-based layout for each offering:
+- Group Classes
+- One-on-One Training
+- Online Coaching
+- Beginner & Intermediate levels
+- Tournament Preparation
 
-Wrap `<Routes>` in `<Suspense fallback={null}>` (or a minimal spinner).
+Each card includes a brief description and a "Learn More" or "Sign Up" button linking to the Contact page.
 
-### 2. Font Optimization (`index.html` + `src/index.css`)
+### 4. Events
+- **Summer Camps** section with details and past bootcamp info (VTSEVA volunteer camp story)
+- **Tournaments** section
+- **Workshops & Special Events**
+- **Event Calendar** — a visual monthly calendar showing upcoming events
+- **Registration Info** — links to external Google Forms for sign-up
 
-- Remove the `@import url(...)` from CSS (render-blocking)
-- Add `<link rel="preconnect" href="https://fonts.googleapis.com">` and `<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>` to `index.html`
-- Add `<link rel="preload" as="style" ...>` for the Google Fonts URL with `&display=swap`
-- Trim font weights: currently loading Playfair Display 400-700 and Source Sans 3 300-700. Reduce to only used weights (400,600,700 for Playfair; 400,500,600 for Source Sans 3).
+### 5. Blog *(placeholder)*
+- A simple "Coming Soon" page to hold the spot in navigation
 
-### 3. Image Lazy Loading (`src/pages/About.tsx`)
+### 6. Contact Us
+- **Contact form** (name, email, message) with validation
+- **Contact details**: email (taruntubati9@gmail.com), phone placeholder, WhatsApp link
+- Toast notification on form submission (no backend — just confirmation UI for now)
 
-The coach photo is below the fold. Add `loading="lazy"` to the `<img>` tag for `tarunPhoto`. The hero image on Index should NOT be lazy-loaded (it's above the fold) — leave as-is.
+---
 
-### 4. Hero Image Optimization (`src/pages/Index.tsx`)
+## Design & Style
+- **Warm & approachable** palette: soft cream/warm white background, friendly navy/teal primary color, warm amber accents
+- Rounded corners, soft shadows, inviting typography
+- Chess piece icons/illustrations as decorative elements
+- Fully responsive — mobile-friendly navigation with hamburger menu
+- Smooth scroll animations between sections
 
-Add `fetchpriority="high"` and explicit `decoding="async"` to the hero banner `<img>` to hint the browser to prioritize it.
-
-### 5. Reduce FloatingChessPieces Animation Cost (`src/components/FloatingChessPieces.tsx`)
-
-Add `will-change: "transform, opacity"` to each animated piece to promote them to GPU layers, reducing paint cost during continuous animations.
-
-### 6. Remove unused `src/App.css`
-
-This file contains unused Vite starter CSS (`.logo`, `.card`, `.read-the-docs`). It's not imported anywhere meaningful but if imported, removing it eliminates dead CSS.
-
-### 7. HTML Meta Updates (`index.html`)
-
-Add proper `<title>` and description for the chess academy (better perceived performance via meaningful first paint).
-
-## Files Changed
-
-| File | Change |
-|------|--------|
-| `src/App.tsx` | Lazy imports + Suspense wrapper |
-| `index.html` | Font preconnect/preload links, remove render-blocking font import reference, update title |
-| `src/index.css` | Remove `@import url(...)`, keep `@tailwind` directives and custom styles |
-| `src/pages/About.tsx` | Add `loading="lazy"` to coach photo |
-| `src/pages/Index.tsx` | Add `fetchpriority="high"` to hero image |
-| `src/components/FloatingChessPieces.tsx` | Add `will-change` style hint |
-| `src/App.css` | Delete (unused) |
-
-No UI, layout, logic, or admin functionality changes.
-
+## Navigation
+- **Top navigation bar** with logo placeholder + links: Home, About Us, Programs, Events, Blog, Contact Us
+- Mobile: collapsible hamburger menu
+- Sticky header for easy access while scrolling
