@@ -69,6 +69,22 @@ export interface EventPageCard {
   extraText?: string;
 }
 
+export interface ContactPageData {
+  pageTitle: string;
+  pageSubtitle: string;
+  email: string;
+  phone: string;
+  phoneRaw: string;
+  whatsappMessage: string;
+  formRecipientEmail: string;
+}
+
+export interface EventsPageData {
+  registerLink: string;
+  registerText: string;
+  registrationDescription: string;
+}
+
 export interface SiteData {
   upcomingEvents: UpcomingEvent[];
   programs: Program[];
