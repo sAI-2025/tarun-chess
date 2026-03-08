@@ -138,6 +138,32 @@ const defaultSiteData: SiteData = {
       extraText: 'The complete bootcamp cost was $15, with all proceeds going toward visually impaired kids at Netra Vidyalaya.',
     },
   ],
+  aboutPage: {
+    storyTitle: 'Our Story',
+    storyParagraphs: [
+      'This academy was founded to teach chess clearly, patiently, and with purpose. Through years of competitive play, I noticed a common problem in chess education: students were often overwhelmed too early. Openings were memorized without understanding, tactics were taught without context, and improvement felt frustrating instead of exciting.',
+      'Our approach is different. We focus on strong fundamentals first, helping students understand why positions work—not just what moves to play. Lessons are structured, paced to the student, and reinforced through guided play so concepts actually stick.',
+      'In 2024, this philosophy was put into practice through structured programs and chess camps. Watching students gain confidence, think independently, and improve week by week confirmed one thing: when chess is taught the right way, students don\'t just get better—they start enjoying the game more.',
+      'This academy exists to build confident, thoughtful chess players — one clear idea at a time.',
+    ],
+    missionTitle: 'Our Mission',
+    missionText: 'To make chess education accessible, engaging, and effective for every student — building not just better players, but better thinkers.',
+    visionTitle: 'Our Vision',
+    visionText: 'A community where every young chess player has the guidance and encouragement to reach their full potential, on and off the board.',
+    coachSectionTitle: 'Meet the Coach',
+    coachName: 'Tarun Sai Tubati',
+    coachParagraphs: [
+      "Hi, I'm Tarun — a 10th grader, two-time state chess champion, and dedicated student of the game. I started playing chess at the age of 8, quickly falling in love with the strategy, creativity, and challenge it offers.",
+      "What began as games with friends and family grew into a competitive pursuit. Today, I train seriously and compete at the state and national levels. I've also served as an assistant tournament director for the Girls State Chess Championship for the past two years.",
+      'Chess has taught me how to think critically, stay disciplined, and grow through challenge — and those are the same values I bring to my teaching.',
+    ],
+    features: [
+      { id: 'f1', title: 'Fundamentals First', description: 'We teach why positions work — not just what moves to play.', iconType: 'book' },
+      { id: 'f2', title: 'Structured Learning', description: 'Lessons are paced to each student and reinforced through guided play.', iconType: 'target' },
+      { id: 'f3', title: 'Patient Instruction', description: 'Improvement feels exciting, not frustrating. Every student progresses at their own pace.', iconType: 'star' },
+      { id: 'f4', title: 'Proven Results', description: 'Students gain confidence, think independently, and genuinely enjoy the game.', iconType: 'user' },
+    ],
+  },
 };
 
 const STORAGE_KEY = 'tarun_chess_site_data';
