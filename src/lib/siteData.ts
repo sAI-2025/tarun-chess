@@ -69,6 +69,22 @@ export interface EventPageCard {
   extraText?: string;
 }
 
+export interface ContactPageData {
+  pageTitle: string;
+  pageSubtitle: string;
+  email: string;
+  phone: string;
+  phoneRaw: string;
+  whatsappMessage: string;
+  formRecipientEmail: string;
+}
+
+export interface EventsPageData {
+  registerLink: string;
+  registerText: string;
+  registrationDescription: string;
+}
+
 export interface SiteData {
   upcomingEvents: UpcomingEvent[];
   programs: Program[];
@@ -77,6 +93,8 @@ export interface SiteData {
   eventsPageCards: EventPageCard[];
   aboutPage: AboutPageData;
   homePage: HomePageData;
+  contactPage: ContactPageData;
+  eventsPage: EventsPageData;
 }
 
 const defaultSiteData: SiteData = {
@@ -190,6 +208,20 @@ const defaultSiteData: SiteData = {
     ctaSectionTitle: 'Ready to Start Your Chess Journey?',
     ctaSectionDescription: "Whether you're a complete beginner or preparing for competition, we have a program for you.",
     ctaSectionButtonText: 'Get Started Today',
+  },
+  contactPage: {
+    pageTitle: 'Contact Us',
+    pageSubtitle: 'Have a question or ready to get started? Reach out and we\'ll be happy to help.',
+    email: 'tarun.tubati9@gmail.com',
+    phone: '+1 (984) 687-6038',
+    phoneRaw: '+19846876038',
+    whatsappMessage: "Hi! I'm interested in Tarun's Chess Academy.",
+    formRecipientEmail: 'tarun.tubati9@gmail.com',
+  },
+  eventsPage: {
+    registerLink: 'https://forms.gle/bkeWgrhbDyHGckok7',
+    registerText: 'Register Now',
+    registrationDescription: 'Ready to sign up for an upcoming event? Use the link below to register through our Google Form.',
   },
 };
 

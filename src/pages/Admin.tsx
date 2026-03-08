@@ -18,8 +18,8 @@ import {
   getAdminEmail,
   setAdminEmail
 } from '@/lib/siteData';
-import type { SiteData, UpcomingEvent, Program, EventSection, PastBootcamp, EventPageCard, AboutFeature, HomePageData } from '@/lib/siteData';
-import { Trash2, Plus, GripVertical, LogOut, Eye, Save, RotateCcw, Lock, Pencil, Calendar, BookOpen, LayoutGrid, CheckCircle, AlertCircle, User, Home, Upload, X } from 'lucide-react';
+import type { SiteData, UpcomingEvent, Program, EventSection, PastBootcamp, EventPageCard, AboutFeature, HomePageData, ContactPageData, EventsPageData } from '@/lib/siteData';
+import { Trash2, Plus, GripVertical, LogOut, Eye, Save, RotateCcw, Lock, Pencil, Calendar, BookOpen, LayoutGrid, CheckCircle, AlertCircle, User, Home, Upload, X, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 
 // ─── Draft Context ───────────────────────────────────────────────────
@@ -430,6 +430,42 @@ function EventSectionsEditor() {
 
       {/* Event Page Cards */}
       <EventPageCardsEditor />
+
+      {/* Registration Settings */}
+      <RegistrationEditor />
+    </div>
+  );
+}
+
+// ─── Registration Editor (draft-based) ───────────────────────────────
+function RegistrationEditor() {
+  const { draft, setDraft } = useDraft();
+  const eventsPage = draft.eventsPage;
+  const updateEventsPage = (data: Partial<EventsPageData>) => setDraft(prev => ({ ...prev, eventsPage: { ...prev.eventsPage, ...data } }));
+
+  return (
+    <div className="space-y-6">
+      <h3 className="font-display text-lg font-semibold text-foreground flex items-center gap-2 pt-4 border-t">
+        <Calendar className="h-5 w-5 text-primary" /> Registration Settings
+      </h3>
+      <Card className="shadow-sm">
+        <CardContent className="pt-6 space-y-4">
+          <div className="space-y-2">
+            <Label>Registration Link (URL)</Label>
+            <Input value={eventsPage.registerLink} onChange={e => updateEventsPage({ registerLink: e.target.value })} placeholder="https://forms.gle/..." />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Button Text</Label>
+              <Input value={eventsPage.registerText} onChange={e => updateEventsPage({ registerText: e.target.value })} placeholder="Register Now" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Registration Description</Label>
+            <Textarea value={eventsPage.registrationDescription} onChange={e => updateEventsPage({ registrationDescription: e.target.value })} rows={2} />
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -759,6 +795,63 @@ function HomePageEditor() {
 }
 
 
+// ─── Contact Page Editor (draft-based) ───────────────────────────────
+function ContactPageEditor() {
+  const { draft, setDraft } = useDraft();
+  const contact = draft.contactPage;
+  const updateContact = (data: Partial<ContactPageData>) => setDraft(prev => ({ ...prev, contactPage: { ...prev.contactPage, ...data } }));
+
+  return (
+    <div className="space-y-8">
+      <Card className="shadow-sm">
+        <CardHeader><CardTitle className="text-lg">Page Header</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Page Title</Label>
+            <Input value={contact.pageTitle} onChange={e => updateContact({ pageTitle: e.target.value })} />
+          </div>
+          <div className="space-y-2">
+            <Label>Page Subtitle</Label>
+            <Textarea value={contact.pageSubtitle} onChange={e => updateContact({ pageSubtitle: e.target.value })} rows={2} />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-sm">
+        <CardHeader><CardTitle className="text-lg">Contact Information</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Email Address</Label>
+              <Input value={contact.email} onChange={e => updateContact({ email: e.target.value })} placeholder="email@example.com" />
+            </div>
+            <div className="space-y-2">
+              <Label>Form Recipient Email</Label>
+              <Input value={contact.formRecipientEmail} onChange={e => updateContact({ formRecipientEmail: e.target.value })} placeholder="email@example.com" />
+              <p className="text-xs text-muted-foreground">The email address the contact form sends to</p>
+            </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Phone (Display)</Label>
+              <Input value={contact.phone} onChange={e => updateContact({ phone: e.target.value })} placeholder="+1 (984) 687-6038" />
+            </div>
+            <div className="space-y-2">
+              <Label>Phone (Raw, for tel: link)</Label>
+              <Input value={contact.phoneRaw} onChange={e => updateContact({ phoneRaw: e.target.value })} placeholder="+19846876038" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>WhatsApp Default Message</Label>
+            <Textarea value={contact.whatsappMessage} onChange={e => updateContact({ whatsappMessage: e.target.value })} rows={2} />
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+
 function AdminPanel() {
   const navigate = useNavigate();
   const { siteData, updateSiteData, resetToDefault } = useSiteData();
@@ -837,12 +930,13 @@ function AdminPanel() {
 
         <main className="container py-8 max-w-4xl">
           <Tabs defaultValue="events" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6 h-12">
+            <TabsList className="grid w-full grid-cols-7 h-12">
               <TabsTrigger value="home" className="gap-1.5 text-xs sm:text-sm"><Home className="h-4 w-4 hidden sm:block" /> Home</TabsTrigger>
               <TabsTrigger value="events" className="gap-1.5 text-xs sm:text-sm"><Calendar className="h-4 w-4 hidden sm:block" /> Events</TabsTrigger>
               <TabsTrigger value="programs" className="gap-1.5 text-xs sm:text-sm"><BookOpen className="h-4 w-4 hidden sm:block" /> Programs</TabsTrigger>
               <TabsTrigger value="event-sections" className="gap-1.5 text-xs sm:text-sm"><LayoutGrid className="h-4 w-4 hidden sm:block" /> Events Page</TabsTrigger>
               <TabsTrigger value="about" className="gap-1.5 text-xs sm:text-sm"><User className="h-4 w-4 hidden sm:block" /> About</TabsTrigger>
+              <TabsTrigger value="contact" className="gap-1.5 text-xs sm:text-sm"><Mail className="h-4 w-4 hidden sm:block" /> Contact</TabsTrigger>
               <TabsTrigger value="settings" className="gap-1.5 text-xs sm:text-sm"><Lock className="h-4 w-4 hidden sm:block" /> Settings</TabsTrigger>
             </TabsList>
             <TabsContent value="home"><HomePageEditor /></TabsContent>
@@ -850,6 +944,7 @@ function AdminPanel() {
             <TabsContent value="programs"><ProgramsEditor /></TabsContent>
             <TabsContent value="event-sections"><EventSectionsEditor /></TabsContent>
             <TabsContent value="about"><AboutPageEditor /></TabsContent>
+            <TabsContent value="contact"><ContactPageEditor /></TabsContent>
             <TabsContent value="settings"><ChangeCredentialsSection /></TabsContent>
           </Tabs>
         </main>

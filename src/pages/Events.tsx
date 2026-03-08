@@ -88,11 +88,11 @@ const Events = () => {
               <div>
                 <h3 className="font-display text-xl font-semibold text-foreground mb-4">Registration</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Ready to sign up for an upcoming event? Use the link below to register through our Google Form.
+                  {siteData.eventsPage.registrationDescription}
                 </p>
                 <Button asChild className="rounded-full bg-accent text-accent-foreground hover:bg-accent/90">
-                  <a href="https://forms.gle/bkeWgrhbDyHGckok7" target="_blank" rel="noopener noreferrer">
-                    Register Now <ExternalLink className="ml-1 h-4 w-4" />
+                  <a href={siteData.eventsPage.registerLink} target="_blank" rel="noopener noreferrer">
+                    {siteData.eventsPage.registerText} <ExternalLink className="ml-1 h-4 w-4" />
                   </a>
                 </Button>
               </div>

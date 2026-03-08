@@ -1,61 +1,60 @@
 
+# Chess Academy Website
 
-# Plan: Contact Page Editor + Register Now Link in Admin
+A warm, approachable informational website for Tarun's Chess Academy — designed to attract parents and students, showcase programs, and direct visitors to external registration.
 
-## 1. Data Model (`src/lib/siteData.ts`)
+---
 
-Add two new data structures:
+## Pages & Structure
 
-```ts
-export interface ContactPageData {
-  pageTitle: string;           // "Contact Us"
-  pageSubtitle: string;        // "Have a question or..."
-  email: string;               // "tarun.tubati9@gmail.com"
-  phone: string;               // "+1 (984) 687-6038"
-  phoneRaw: string;            // "+19846876038" (for tel: link)
-  whatsappMessage: string;     // "Hi! I'm interested..."
-  formRecipientEmail: string;  // "tarun.tubati9@gmail.com" (mailto target)
-}
+### 1. Home
+- **Hero section** with a welcoming headline, chess-themed imagery (placeholder), and tagline about building confident chess players
+- **Three feature cards**: Classes, Camps, Tournaments — each with an icon and brief description
+- **Call-to-action buttons**: "Join Now" and "Book a Class" linking to the Contact page
+- **Upcoming Events preview** showing 2–3 nearest events with dates
 
-export interface EventsPageData {
-  registerLink: string;        // "https://forms.gle/bkeWgrhbDyHGckok7"
-  registerText: string;        // "Register Now"
-  registrationDescription: string; // "Ready to sign up..."
-}
-```
+### 2. About Us
+Tabbed or scrolling sub-sections:
+- **Our Story** — the founding philosophy and teaching approach (content provided)
+- **Mission & Vision** — concise goals for chess education
+- **Meet Tarun** — bio, photo placeholder, achievements (two-time state champion, assistant TD)
+- **Why Choose Us** — teaching style highlights: fundamentals-first, patient instruction, structured learning
 
-Add `contactPage: ContactPageData` and `eventsPage: EventsPageData` to `SiteData` with current hardcoded values as defaults.
+### 3. Programs
+Clean card-based layout for each offering:
+- Group Classes
+- One-on-One Training
+- Online Coaching
+- Beginner & Intermediate levels
+- Tournament Preparation
 
-## 2. Dynamic Rendering
+Each card includes a brief description and a "Learn More" or "Sign Up" button linking to the Contact page.
 
-**Contact page (`Contact.tsx`)**:
-- Import `useSiteData`, read `siteData.contactPage`
-- Replace hardcoded email, phone, WhatsApp message, mailto target, page title/subtitle
+### 4. Events
+- **Summer Camps** section with details and past bootcamp info (VTSEVA volunteer camp story)
+- **Tournaments** section
+- **Workshops & Special Events**
+- **Event Calendar** — a visual monthly calendar showing upcoming events
+- **Registration Info** — links to external Google Forms for sign-up
 
-**Events page (`Events.tsx`)**:
-- Import `useSiteData`, read `siteData.eventsPage`
-- Replace hardcoded Google Form link, "Register Now" text, and registration description
+### 5. Blog *(placeholder)*
+- A simple "Coming Soon" page to hold the spot in navigation
 
-## 3. Admin Panel (`Admin.tsx`)
+### 6. Contact Us
+- **Contact form** (name, email, message) with validation
+- **Contact details**: email (taruntubati9@gmail.com), phone placeholder, WhatsApp link
+- Toast notification on form submission (no backend — just confirmation UI for now)
 
-Add a 7th tab **"Contact"** (with `Mail` icon) and update grid to `grid-cols-7`.
+---
 
-**ContactPageEditor** component with inputs for:
-- Page title and subtitle
-- Email address, phone (display + raw), WhatsApp default message
-- Form recipient email
+## Design & Style
+- **Warm & approachable** palette: soft cream/warm white background, friendly navy/teal primary color, warm amber accents
+- Rounded corners, soft shadows, inviting typography
+- Chess piece icons/illustrations as decorative elements
+- Fully responsive — mobile-friendly navigation with hamburger menu
+- Smooth scroll animations between sections
 
-Add "Register Now Link" fields to the existing **Events Page** tab (`EventSectionsEditor`):
-- Registration link URL
-- Button text
-- Registration description text
-
-## Files Changed
-
-| File | Change |
-|------|--------|
-| `src/lib/siteData.ts` | Add `ContactPageData`, `EventsPageData` interfaces + defaults |
-| `src/pages/Contact.tsx` | Read from `siteData.contactPage` |
-| `src/pages/Events.tsx` | Read register link from `siteData.eventsPage` |
-| `src/pages/Admin.tsx` | Add Contact tab + editor, add register fields to Events Page tab |
-
+## Navigation
+- **Top navigation bar** with logo placeholder + links: Home, About Us, Programs, Events, Blog, Contact Us
+- Mobile: collapsible hamburger menu
+- Sticky header for easy access while scrolling
