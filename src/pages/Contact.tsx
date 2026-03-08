@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { useSiteData } from "@/contexts/SiteDataContext";
 import { z } from "zod";
 
 const contactSchema = z.object({
@@ -21,6 +22,8 @@ const fadeUp = {
 
 const Contact = () => {
   const { toast } = useToast();
+  const { siteData } = useSiteData();
+  const contact = siteData.contactPage;
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -41,7 +44,7 @@ const Contact = () => {
     const body = encodeURIComponent(
       `Name: ${form.name}\nEmail: ${form.email}\n\nMessage:\n${form.message}`
     );
-    const mailtoLink = `mailto:tarun.tubati9@gmail.com?subject=${subject}&body=${body}`;
+    const mailtoLink = `mailto:${contact.formRecipientEmail}?subject=${subject}&body=${body}`;
     window.open(mailtoLink, "_blank");
 
     toast({
@@ -54,9 +57,9 @@ const Contact = () => {
   return (
     <section className="py-16 md:py-24">
       <div className="container max-w-4xl">
-        <h1 className="font-display text-4xl font-bold text-foreground mb-4 text-center">Contact Us</h1>
+        <h1 className="font-display text-4xl font-bold text-foreground mb-4 text-center">{contact.pageTitle}</h1>
         <p className="text-muted-foreground text-center mb-12 max-w-md mx-auto">
-          Have a question or ready to get started? Reach out and we'll be happy to help.
+          {contact.pageSubtitle}
         </p>
 
         <div className="grid md:grid-cols-2 gap-10">
@@ -110,20 +113,20 @@ const Contact = () => {
             <div>
               <h3 className="font-display text-xl font-semibold text-foreground mb-4">Get in Touch</h3>
               <div className="space-y-4">
-                <a href="mailto:tarun.tubati9@gmail.com" className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors">
+                <a href={`mailto:${contact.email}`} className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
                     <Mail className="h-5 w-5 text-primary" />
                   </div>
-                  <span className="text-sm">tarun.tubati9@gmail.com</span>
+                  <span className="text-sm">{contact.email}</span>
                 </a>
-                <a href="tel:+19846876038" className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors">
+                <a href={`tel:${contact.phoneRaw}`} className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
                     <Phone className="h-5 w-5 text-primary" />
                   </div>
-                  <span className="text-sm">+1 (984) 687-6038</span>
+                  <span className="text-sm">{contact.phone}</span>
                 </a>
                 <a
-                  href={`https://wa.me/?text=${encodeURIComponent("Hi! I'm interested in Tarun's Chess Academy.")}`}
+                  href={`https://wa.me/?text=${encodeURIComponent(contact.whatsappMessage)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors"
