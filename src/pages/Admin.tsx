@@ -19,7 +19,7 @@ import {
   setAdminEmail
 } from '@/lib/siteData';
 import type { UpcomingEvent, Program, EventSection } from '@/lib/siteData';
-import { Trash2, Plus, GripVertical, LogOut, Eye, Save, RotateCcw, Lock, Pencil, Calendar, BookOpen, LayoutGrid } from 'lucide-react';
+import { Trash2, Plus, GripVertical, LogOut, Eye, Save, RotateCcw, Lock, Pencil, Calendar, BookOpen, LayoutGrid, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 // ─── Drag-and-drop hook ─────────────────────────────────────────────
