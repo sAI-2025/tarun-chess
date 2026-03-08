@@ -36,10 +36,13 @@ export function SiteDataProvider({ children }: { children: ReactNode }) {
   );
 }
 
+const fallbackContext: SiteDataContextType = {
+  siteData: defaultSiteData,
+  updateSiteData: () => {},
+  resetToDefault: () => {},
+};
+
 export function useSiteData() {
   const context = useContext(SiteDataContext);
-  if (!context) {
-    throw new Error('useSiteData must be used within a SiteDataProvider');
-  }
-  return context;
+  return context ?? fallbackContext;
 }
