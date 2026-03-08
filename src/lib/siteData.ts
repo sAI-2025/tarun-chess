@@ -85,6 +85,27 @@ export interface EventsPageData {
   registrationDescription: string;
 }
 
+export interface FooterQuickLink {
+  id: string;
+  label: string;
+  path: string;
+}
+
+export interface FooterSocialLink {
+  id: string;
+  platform: string;
+  url: string;
+}
+
+export interface FooterData {
+  brandName: string;
+  tagline: string;
+  contactEmail: string;
+  copyrightText: string;
+  quickLinks: FooterQuickLink[];
+  socialLinks: FooterSocialLink[];
+}
+
 export interface SiteData {
   upcomingEvents: UpcomingEvent[];
   programs: Program[];
@@ -95,6 +116,7 @@ export interface SiteData {
   homePage: HomePageData;
   contactPage: ContactPageData;
   eventsPage: EventsPageData;
+  footer: FooterData;
 }
 
 const defaultSiteData: SiteData = {
