@@ -45,7 +45,21 @@ export interface AboutPageData {
   coachSectionTitle: string;
   coachName: string;
   coachParagraphs: string[];
+  coachPhotoUrl?: string;
   features: AboutFeature[];
+}
+
+export interface HomePageData {
+  heroTagline: string;
+  heroTitle: string;
+  heroTitleAccent: string;
+  heroDescription: string;
+  ctaText: string;
+  ctaLink: string;
+  secondaryCtaText: string;
+  ctaSectionTitle: string;
+  ctaSectionDescription: string;
+  ctaSectionButtonText: string;
 }
 
 export interface EventPageCard {
@@ -62,6 +76,7 @@ export interface SiteData {
   pastBootcamp: PastBootcamp;
   eventsPageCards: EventPageCard[];
   aboutPage: AboutPageData;
+  homePage: HomePageData;
 }
 
 const defaultSiteData: SiteData = {
@@ -163,6 +178,18 @@ const defaultSiteData: SiteData = {
       { id: 'f3', title: 'Patient Instruction', description: 'Improvement feels exciting, not frustrating. Every student progresses at their own pace.', iconType: 'star' },
       { id: 'f4', title: 'Proven Results', description: 'Students gain confidence, think independently, and genuinely enjoy the game.', iconType: 'user' },
     ],
+  },
+  homePage: {
+    heroTagline: "Welcome to Tarun's Chess Academy",
+    heroTitle: 'Build Confidence,',
+    heroTitleAccent: 'One Move at a Time',
+    heroDescription: 'Patient, fundamentals-first chess instruction that helps students think clearly, play confidently, and love the game.',
+    ctaText: 'Join Now',
+    ctaLink: 'https://api.whatsapp.com/send/?phone=%2B19846876038&text=Hi%21+I%27m+interested+in+learning+more+about+Tarun\'s+Chess+Academy.+Please+share+details+about+your+chess+coaching+programs.&type=phone_number&app_absent=0',
+    secondaryCtaText: 'Explore Programs',
+    ctaSectionTitle: 'Ready to Start Your Chess Journey?',
+    ctaSectionDescription: "Whether you're a complete beginner or preparing for competition, we have a program for you.",
+    ctaSectionButtonText: 'Get Started Today',
   },
 };
 

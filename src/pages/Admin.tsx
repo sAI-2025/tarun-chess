@@ -18,8 +18,8 @@ import {
   getAdminEmail,
   setAdminEmail
 } from '@/lib/siteData';
-import type { SiteData, UpcomingEvent, Program, EventSection, PastBootcamp, EventPageCard, AboutFeature } from '@/lib/siteData';
-import { Trash2, Plus, GripVertical, LogOut, Eye, Save, RotateCcw, Lock, Pencil, Calendar, BookOpen, LayoutGrid, CheckCircle, AlertCircle, User } from 'lucide-react';
+import type { SiteData, UpcomingEvent, Program, EventSection, PastBootcamp, EventPageCard, AboutFeature, HomePageData } from '@/lib/siteData';
+import { Trash2, Plus, GripVertical, LogOut, Eye, Save, RotateCcw, Lock, Pencil, Calendar, BookOpen, LayoutGrid, CheckCircle, AlertCircle, User, Home, Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 // ─── Draft Context ───────────────────────────────────────────────────
@@ -584,6 +584,45 @@ function AboutPageEditor() {
               <Input value={about.coachName} onChange={e => updateAbout({ coachName: e.target.value })} />
             </div>
           </div>
+          {/* Coach Photo Upload */}
+          <div className="space-y-2">
+            <Label>Coach Photo</Label>
+            <div className="flex items-center gap-4">
+              <div className="h-20 w-16 rounded-lg overflow-hidden bg-muted border flex items-center justify-center shrink-0">
+                {about.coachPhotoUrl ? (
+                  <img src={about.coachPhotoUrl} alt="Coach preview" className="h-full w-full object-cover object-top" />
+                ) : (
+                  <User className="h-8 w-8 text-muted-foreground" />
+                )}
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="cursor-pointer">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      if (file.size > 2 * 1024 * 1024) { toast.error('Image must be under 2MB'); return; }
+                      const reader = new FileReader();
+                      reader.onload = () => updateAbout({ coachPhotoUrl: reader.result as string });
+                      reader.readAsDataURL(file);
+                    }}
+                  />
+                  <span className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer">
+                    <Upload className="h-3.5 w-3.5" /> Upload Photo
+                  </span>
+                </label>
+                {about.coachPhotoUrl && (
+                  <Button variant="ghost" size="sm" className="gap-1 text-destructive hover:text-destructive w-fit h-7 px-2" onClick={() => updateAbout({ coachPhotoUrl: undefined })}>
+                    <X className="h-3.5 w-3.5" /> Remove (use default)
+                  </Button>
+                )}
+                <p className="text-xs text-muted-foreground">Max 2MB. Leave empty to use default photo.</p>
+              </div>
+            </div>
+          </div>
           <div className="space-y-2">
             <Label>Coach Bio (separate paragraphs with blank lines)</Label>
             <Textarea value={about.coachParagraphs.join('\n\n')} onChange={e => updateAbout({ coachParagraphs: e.target.value.split(/\n\s*\n/).filter(Boolean) })} rows={8} />
@@ -647,7 +686,79 @@ function AboutPageEditor() {
   );
 }
 
-// ─── Main Admin Panel ────────────────────────────────────────────────
+// ─── Home Page Editor (draft-based) ──────────────────────────────────
+function HomePageEditor() {
+  const { draft, setDraft } = useDraft();
+  const home = draft.homePage;
+  const updateHome = (data: Partial<HomePageData>) => setDraft(prev => ({ ...prev, homePage: { ...prev.homePage, ...data } }));
+
+  return (
+    <div className="space-y-8">
+      <Card className="shadow-sm">
+        <CardHeader><CardTitle className="text-lg">Hero Section</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Tagline</Label>
+            <Input value={home.heroTagline} onChange={e => updateHome({ heroTagline: e.target.value })} placeholder="Welcome to..." />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Title</Label>
+              <Input value={home.heroTitle} onChange={e => updateHome({ heroTitle: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Title Accent (highlighted text)</Label>
+              <Input value={home.heroTitleAccent} onChange={e => updateHome({ heroTitleAccent: e.target.value })} />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Description</Label>
+            <Textarea value={home.heroDescription} onChange={e => updateHome({ heroDescription: e.target.value })} rows={3} />
+          </div>
+        </CardContent>
+      </Card>
+      <Card className="shadow-sm">
+        <CardHeader><CardTitle className="text-lg">Call-to-Action Buttons</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Primary Button Text</Label>
+              <Input value={home.ctaText} onChange={e => updateHome({ ctaText: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Secondary Button Text</Label>
+              <Input value={home.secondaryCtaText} onChange={e => updateHome({ secondaryCtaText: e.target.value })} />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>CTA Link (URL)</Label>
+            <Input value={home.ctaLink} onChange={e => updateHome({ ctaLink: e.target.value })} placeholder="https://..." />
+            <p className="text-xs text-muted-foreground">Used for both the hero and bottom CTA buttons</p>
+          </div>
+        </CardContent>
+      </Card>
+      <Card className="shadow-sm">
+        <CardHeader><CardTitle className="text-lg">Bottom CTA Section</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Section Title</Label>
+            <Input value={home.ctaSectionTitle} onChange={e => updateHome({ ctaSectionTitle: e.target.value })} />
+          </div>
+          <div className="space-y-2">
+            <Label>Section Description</Label>
+            <Textarea value={home.ctaSectionDescription} onChange={e => updateHome({ ctaSectionDescription: e.target.value })} rows={2} />
+          </div>
+          <div className="space-y-2">
+            <Label>Button Text</Label>
+            <Input value={home.ctaSectionButtonText} onChange={e => updateHome({ ctaSectionButtonText: e.target.value })} />
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+
 function AdminPanel() {
   const navigate = useNavigate();
   const { siteData, updateSiteData, resetToDefault } = useSiteData();
@@ -726,13 +837,15 @@ function AdminPanel() {
 
         <main className="container py-8 max-w-4xl">
           <Tabs defaultValue="events" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5 h-12">
+            <TabsList className="grid w-full grid-cols-6 h-12">
+              <TabsTrigger value="home" className="gap-1.5 text-xs sm:text-sm"><Home className="h-4 w-4 hidden sm:block" /> Home</TabsTrigger>
               <TabsTrigger value="events" className="gap-1.5 text-xs sm:text-sm"><Calendar className="h-4 w-4 hidden sm:block" /> Events</TabsTrigger>
               <TabsTrigger value="programs" className="gap-1.5 text-xs sm:text-sm"><BookOpen className="h-4 w-4 hidden sm:block" /> Programs</TabsTrigger>
               <TabsTrigger value="event-sections" className="gap-1.5 text-xs sm:text-sm"><LayoutGrid className="h-4 w-4 hidden sm:block" /> Events Page</TabsTrigger>
-              <TabsTrigger value="about" className="gap-1.5 text-xs sm:text-sm"><User className="h-4 w-4 hidden sm:block" /> About Page</TabsTrigger>
+              <TabsTrigger value="about" className="gap-1.5 text-xs sm:text-sm"><User className="h-4 w-4 hidden sm:block" /> About</TabsTrigger>
               <TabsTrigger value="settings" className="gap-1.5 text-xs sm:text-sm"><Lock className="h-4 w-4 hidden sm:block" /> Settings</TabsTrigger>
             </TabsList>
+            <TabsContent value="home"><HomePageEditor /></TabsContent>
             <TabsContent value="events"><UpcomingEventsEditor /></TabsContent>
             <TabsContent value="programs"><ProgramsEditor /></TabsContent>
             <TabsContent value="event-sections"><EventSectionsEditor /></TabsContent>
