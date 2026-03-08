@@ -584,6 +584,45 @@ function AboutPageEditor() {
               <Input value={about.coachName} onChange={e => updateAbout({ coachName: e.target.value })} />
             </div>
           </div>
+          {/* Coach Photo Upload */}
+          <div className="space-y-2">
+            <Label>Coach Photo</Label>
+            <div className="flex items-center gap-4">
+              <div className="h-20 w-16 rounded-lg overflow-hidden bg-muted border flex items-center justify-center shrink-0">
+                {about.coachPhotoUrl ? (
+                  <img src={about.coachPhotoUrl} alt="Coach preview" className="h-full w-full object-cover object-top" />
+                ) : (
+                  <User className="h-8 w-8 text-muted-foreground" />
+                )}
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="cursor-pointer">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      if (file.size > 2 * 1024 * 1024) { toast.error('Image must be under 2MB'); return; }
+                      const reader = new FileReader();
+                      reader.onload = () => updateAbout({ coachPhotoUrl: reader.result as string });
+                      reader.readAsDataURL(file);
+                    }}
+                  />
+                  <span className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer">
+                    <Upload className="h-3.5 w-3.5" /> Upload Photo
+                  </span>
+                </label>
+                {about.coachPhotoUrl && (
+                  <Button variant="ghost" size="sm" className="gap-1 text-destructive hover:text-destructive w-fit h-7 px-2" onClick={() => updateAbout({ coachPhotoUrl: undefined })}>
+                    <X className="h-3.5 w-3.5" /> Remove (use default)
+                  </Button>
+                )}
+                <p className="text-xs text-muted-foreground">Max 2MB. Leave empty to use default photo.</p>
+              </div>
+            </div>
+          </div>
           <div className="space-y-2">
             <Label>Coach Bio (separate paragraphs with blank lines)</Label>
             <Textarea value={about.coachParagraphs.join('\n\n')} onChange={e => updateAbout({ coachParagraphs: e.target.value.split(/\n\s*\n/).filter(Boolean) })} rows={8} />
