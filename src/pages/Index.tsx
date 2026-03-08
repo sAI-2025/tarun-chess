@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import FloatingChessPieces from "@/components/FloatingChessPieces";
 import heroBanner from "@/assets/chess-hero-banner.jpg";
 import { useRef } from "react";
+import { useSiteData } from "@/contexts/SiteDataContext";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -34,12 +35,6 @@ const features = [
   },
 ];
 
-const upcomingEvents = [
-  { date: "Mar 15, 2026", title: "Spring Group Classes Begin", type: "Classes" },
-  { date: "Jun 22, 2026", title: "Summer Chess Bootcamp", type: "Camp" },
-  { date: "Aug 10, 2026", title: "City Championship Prep Workshop", type: "Workshop" },
-];
-
 const Index = () => {
   const heroRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
@@ -48,6 +43,8 @@ const Index = () => {
   });
   const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
   const overlayOpacity = useTransform(scrollYProgress, [0, 1], [0.55, 0.8]);
+  
+  const { siteData } = useSiteData();
 
   return (
     <>
@@ -181,9 +178,9 @@ const Index = () => {
             Upcoming Events
           </h2>
           <div className="mx-auto max-w-2xl space-y-4">
-            {upcomingEvents.map((ev, i) => (
+            {siteData.upcomingEvents.map((ev, i) => (
               <motion.div
-                key={i}
+                key={ev.id}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
