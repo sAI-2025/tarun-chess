@@ -93,6 +93,8 @@ export interface SiteData {
   eventsPageCards: EventPageCard[];
   aboutPage: AboutPageData;
   homePage: HomePageData;
+  contactPage: ContactPageData;
+  eventsPage: EventsPageData;
 }
 
 const defaultSiteData: SiteData = {
