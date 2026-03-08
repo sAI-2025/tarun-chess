@@ -14,7 +14,9 @@ import {
   setAdminLoggedIn, 
   generateId,
   getAdminPassword,
-  setAdminPassword 
+  setAdminPassword,
+  getAdminEmail,
+  setAdminEmail 
 } from '@/lib/siteData';
 import type { UpcomingEvent, Program, EventSection } from '@/lib/siteData';
 import { Trash2, Plus, GripVertical, LogOut, Eye, Save, RotateCcw, Lock } from 'lucide-react';
