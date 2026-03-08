@@ -112,7 +112,47 @@ const ADMIN_EMAIL_KEY = 'tarun_chess_admin_email';
 const DEFAULT_ADMIN_EMAIL = 'tarun.tubati9@gmail.com';
 const DEFAULT_ADMIN_PASSWORD = '12345678';
 
-export function getAdminEmail(): string {
+export function getSiteData(): SiteData {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch (e) {
+    console.error('Error loading site data:', e);
+  }
+  return defaultSiteData;
+}
+
+export function saveSiteData(data: SiteData): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch (e) {
+    console.error('Error saving site data:', e);
+  }
+}
+
+export function resetSiteData(): SiteData {
+  localStorage.removeItem(STORAGE_KEY);
+  return defaultSiteData;
+}
+
+export function getAdminPassword(): string {
+  try {
+    const stored = localStorage.getItem(ADMIN_PASSWORD_KEY);
+    if (stored) return stored;
+  } catch (e) {
+    console.error('Error loading admin password:', e);
+  }
+  return DEFAULT_ADMIN_PASSWORD;
+}
+
+export function setAdminPassword(password: string): void {
+  try {
+    localStorage.setItem(ADMIN_PASSWORD_KEY, password);
+  } catch (e) {
+    console.error('Error saving admin password:', e);
+  }
+}
+
   try {
     const stored = localStorage.getItem(ADMIN_EMAIL_KEY);
     if (stored) return stored;
