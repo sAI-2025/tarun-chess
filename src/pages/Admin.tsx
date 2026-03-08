@@ -8,16 +8,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { useSiteData } from '@/contexts/SiteDataContext';
-import {
-  validateAdmin,
-  isAdminLoggedIn,
-  setAdminLoggedIn,
+import { 
+  validateAdmin, 
+  isAdminLoggedIn, 
+  setAdminLoggedIn, 
   generateId,
   getAdminPassword,
-  setAdminPassword
+  setAdminPassword,
+  getAdminEmail,
+  setAdminEmail
 } from '@/lib/siteData';
 import type { UpcomingEvent, Program, EventSection } from '@/lib/siteData';
-import { Trash2, Plus, GripVertical, LogOut, Eye, Save, RotateCcw, Lock, Pencil, Calendar, BookOpen, LayoutGrid } from 'lucide-react';
+import { Trash2, Plus, GripVertical, LogOut, Eye, Save, RotateCcw, Lock, Pencil, Calendar, BookOpen, LayoutGrid, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 // ─── Drag-and-drop hook ─────────────────────────────────────────────
@@ -115,44 +117,71 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
   );
 }
 
-// ─── Change Password ─────────────────────────────────────────────────
-function ChangePasswordSection() {
+// ─── Change Credentials ──────────────────────────────────────────────
+function ChangeCredentialsSection() {
   const [currentPassword, setCurrentPassword] = useState('');
+  const [newLoginId, setNewLoginId] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleChangePassword = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (currentPassword !== getAdminPassword()) { toast.error('Current password is incorrect'); return; }
-    if (newPassword.length < 6) { toast.error('New password must be at least 6 characters'); return; }
-    if (newPassword !== confirmPassword) { toast.error('New passwords do not match'); return; }
-    setAdminPassword(newPassword);
-    setCurrentPassword(''); setNewPassword(''); setConfirmPassword('');
-    toast.success('Password changed successfully');
+    
+    let changed = false;
+
+    // Update login ID if provided
+    if (newLoginId.trim()) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newLoginId.trim())) {
+        toast.error('Please enter a valid email for the new Login ID');
+        return;
+      }
+      setAdminEmail(newLoginId.trim());
+      changed = true;
+    }
+
+    // Update password if provided
+    if (newPassword) {
+      if (newPassword.length < 6) { toast.error('New password must be at least 6 characters'); return; }
+      if (newPassword !== confirmPassword) { toast.error('New passwords do not match'); return; }
+      setAdminPassword(newPassword);
+      changed = true;
+    }
+
+    if (!changed) { toast.error('Please enter a new Login ID or new password'); return; }
+
+    setCurrentPassword(''); setNewLoginId(''); setNewPassword(''); setConfirmPassword('');
+    toast.success('Credentials updated successfully');
   };
 
   return (
     <Card className="shadow-sm">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
-          <Lock className="h-5 w-5 text-primary" /> Change Password
+          <Lock className="h-5 w-5 text-primary" /> Change Credentials
         </CardTitle>
+        <p className="text-sm text-muted-foreground">Update your login email and/or password. Current Login ID: <span className="font-medium text-foreground">{getAdminEmail()}</span></p>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleChangePassword} className="space-y-4 max-w-md">
+        <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
           <div className="space-y-2">
-            <Label htmlFor="currentPassword">Current Password</Label>
-            <Input id="currentPassword" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+            <Label htmlFor="currentPassword">Current Password *</Label>
+            <Input id="currentPassword" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Enter current password" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="newLoginId">New Login ID (Email)</Label>
+            <Input id="newLoginId" type="email" value={newLoginId} onChange={(e) => setNewLoginId(e.target.value)} placeholder={getAdminEmail()} />
+            <p className="text-xs text-muted-foreground">Leave blank to keep current login email</p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="newPassword">New Password</Label>
-            <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+            <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Leave blank to keep current" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">Confirm New Password</Label>
-            <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+            <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Re-enter new password" />
           </div>
-          <Button type="submit" className="font-semibold">Update Password</Button>
+          <Button type="submit" className="font-semibold">Update Credentials</Button>
         </form>
       </CardContent>
     </Card>
@@ -592,6 +621,9 @@ function AdminPanel() {
             <h1 className="font-display text-xl font-bold text-foreground">Admin Panel</h1>
           </div>
           <div className="flex items-center gap-2">
+            <Button size="sm" onClick={() => { toast.success('All changes are live! Refresh the site to see updates.'); }} className="gap-1.5 font-semibold bg-primary hover:bg-primary/90">
+              <CheckCircle className="h-4 w-4" /> Update
+            </Button>
             <Button variant="outline" size="sm" asChild className="gap-1.5">
               <a href="/" target="_blank"><Eye className="h-4 w-4" /> View Site</a>
             </Button>
@@ -617,7 +649,7 @@ function AdminPanel() {
           <TabsContent value="events"><UpcomingEventsEditor /></TabsContent>
           <TabsContent value="programs"><ProgramsEditor /></TabsContent>
           <TabsContent value="event-sections"><EventSectionsEditor /></TabsContent>
-          <TabsContent value="settings"><ChangePasswordSection /></TabsContent>
+          <TabsContent value="settings"><ChangeCredentialsSection /></TabsContent>
         </Tabs>
       </main>
     </div>
