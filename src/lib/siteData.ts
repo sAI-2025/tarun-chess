@@ -28,6 +28,26 @@ export interface PastBootcamp {
   paragraphs: string[];
 }
 
+export interface AboutFeature {
+  id: string;
+  title: string;
+  description: string;
+  iconType: 'book' | 'target' | 'star' | 'user';
+}
+
+export interface AboutPageData {
+  storyTitle: string;
+  storyParagraphs: string[];
+  missionTitle: string;
+  missionText: string;
+  visionTitle: string;
+  visionText: string;
+  coachSectionTitle: string;
+  coachName: string;
+  coachParagraphs: string[];
+  features: AboutFeature[];
+}
+
 export interface EventPageCard {
   id: string;
   title: string;
