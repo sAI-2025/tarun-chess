@@ -808,7 +808,8 @@ function AdminPanel() {
             <EventSectionsEditor />
           </TabsContent>
 
-          <TabsContent value="settings">
+          <TabsContent value="settings" className="space-y-6">
+            <ChangeLoginIdSection />
             <ChangePasswordSection />
           </TabsContent>
         </Tabs>
