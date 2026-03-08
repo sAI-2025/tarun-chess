@@ -41,7 +41,7 @@ const Contact = () => {
     const body = encodeURIComponent(
       `Name: ${form.name}\nEmail: ${form.email}\n\nMessage:\n${form.message}`
     );
-    const mailtoLink = `mailto:taruntubati9@gmail.com?subject=${subject}&body=${body}`;
+    const mailtoLink = `mailto:tarun.tubati9@gmail.com?subject=${subject}&body=${body}`;
     window.open(mailtoLink, "_blank");
 
     toast({
