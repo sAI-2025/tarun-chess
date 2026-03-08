@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { useSiteData } from "@/contexts/SiteDataContext";
-import type { EventSection } from "@/lib/siteData";
+import type { EventSection, EventPageCard } from "@/lib/siteData";
 
 const iconMap = {
   tent: Tent,
@@ -51,21 +51,22 @@ const Events = () => {
             </div>
           </motion.div>
 
-          {/* Past Bootcamp */}
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
-            <Card className="border-none shadow-md mb-16">
-              <CardContent className="pt-6">
-                <h3 className="font-display text-xl font-semibold text-foreground mb-3">
-                  {siteData.pastBootcamp.title}
-                </h3>
-                <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
-                  {siteData.pastBootcamp.paragraphs.map((p, i) => (
-                    <p key={i}>{p}</p>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+          {/* Event Cards */}
+          {siteData.eventsPageCards.map((card: EventPageCard) => (
+            <motion.div key={card.id} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
+              <Card className="border-none shadow-md mb-6">
+                <CardContent className="pt-6">
+                  <h3 className="font-display text-xl font-semibold text-foreground mb-3">
+                    {card.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{card.description}</p>
+                  {card.extraText && (
+                    <p className="text-sm text-muted-foreground leading-relaxed mt-3">{card.extraText}</p>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
 
           {/* Calendar & Registration */}
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>

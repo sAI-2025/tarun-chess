@@ -28,11 +28,19 @@ export interface PastBootcamp {
   paragraphs: string[];
 }
 
+export interface EventPageCard {
+  id: string;
+  title: string;
+  description: string;
+  extraText?: string;
+}
+
 export interface SiteData {
   upcomingEvents: UpcomingEvent[];
   programs: Program[];
   eventSections: EventSection[];
   pastBootcamp: PastBootcamp;
+  eventsPageCards: EventPageCard[];
 }
 
 const defaultSiteData: SiteData = {
@@ -101,6 +109,14 @@ const defaultSiteData: SiteData = {
       'The complete bootcamp cost was $15, with all proceeds going toward visually impaired kids at Netra Vidyalaya.',
     ],
   },
+  eventsPageCards: [
+    {
+      id: 'default-bootcamp',
+      title: 'Past Bootcamp: VTSEVA Chess Camp 2024',
+      description: 'As an active VTSEVA volunteer, Tarun ran a 4-week chess bootcamp starting June 24, 2024. Students learned fundamental and intermediate chess strategies in a fun, supportive environment.',
+      extraText: 'The complete bootcamp cost was $15, with all proceeds going toward visually impaired kids at Netra Vidyalaya.',
+    },
+  ],
 };
 
 const STORAGE_KEY = 'tarun_chess_site_data';

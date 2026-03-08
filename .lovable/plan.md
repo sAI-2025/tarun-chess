@@ -1,39 +1,60 @@
 
+# Chess Academy Website
 
-# Plan: Add Event Cards System to Events Page
+A warm, approachable informational website for Tarun's Chess Academy — designed to attract parents and students, showcase programs, and direct visitors to external registration.
 
-## Summary
-Extend the data model with an `eventsPageCards` array so the admin can add multiple event cards (like the existing Past Bootcamp) to the Events page. The existing bootcamp becomes the default first card. The admin "Events Page" tab gets a new "Event Cards" editor section.
+---
 
-## Changes
+## Pages & Structure
 
-### 1. Update data types and defaults (`src/lib/siteData.ts`)
-- Add new `EventPageCard` interface: `{ id, title, description, extraText? }`
-- Add `eventsPageCards: EventPageCard[]` to `SiteData`
-- Default data includes the existing VTSEVA bootcamp as the first card:
-  ```
-  { title: "Past Bootcamp: VTSEVA Chess Camp 2024", description: "As an active VTSEVA volunteer...", extraText: "The complete bootcamp cost was $15..." }
-  ```
-- Keep `pastBootcamp` in the type for backward compatibility or remove it (replace with the new array)
+### 1. Home
+- **Hero section** with a welcoming headline, chess-themed imagery (placeholder), and tagline about building confident chess players
+- **Three feature cards**: Classes, Camps, Tournaments — each with an icon and brief description
+- **Call-to-action buttons**: "Join Now" and "Book a Class" linking to the Contact page
+- **Upcoming Events preview** showing 2–3 nearest events with dates
 
-### 2. Update Events page rendering (`src/pages/Events.tsx`)
-- Replace the single `pastBootcamp` card with a dynamic loop over `siteData.eventsPageCards`
-- Each card renders with the same styling: title, description paragraphs, and optional extra text
-- Cards stack vertically below the event sections grid
+### 2. About Us
+Tabbed or scrolling sub-sections:
+- **Our Story** — the founding philosophy and teaching approach (content provided)
+- **Mission & Vision** — concise goals for chess education
+- **Meet Tarun** — bio, photo placeholder, achievements (two-time state champion, assistant TD)
+- **Why Choose Us** — teaching style highlights: fundamentals-first, patient instruction, structured learning
 
-### 3. Update Admin panel (`src/pages/Admin.tsx`)
-- In `EventSectionsEditor`, add a new "Event Cards" sub-section with:
-  - "Add Event Card" form: Title, Description (textarea), Extra Text (optional)
-  - List of existing cards with drag-to-reorder, edit, and delete
-  - Same DraggableCard pattern used elsewhere
-- Remove or keep the old "Past Bootcamp Section" editor (replace with the new cards editor since the bootcamp is now card #1)
+### 3. Programs
+Clean card-based layout for each offering:
+- Group Classes
+- One-on-One Training
+- Online Coaching
+- Beginner & Intermediate levels
+- Tournament Preparation
 
-### 4. Context compatibility (`src/contexts/SiteDataContext.tsx`)
-- No changes needed -- already spreads partial updates via `updateSiteData`
+Each card includes a brief description and a "Learn More" or "Sign Up" button linking to the Contact page.
 
-## What stays the same
-- All visual styling, layout, colors, typography on the Events page
-- The three event section cards (Summer Camps, Tournaments, Workshops) grid
-- Calendar and Registration sections
-- All other admin tabs (Events, Programs, Settings)
+### 4. Events
+- **Summer Camps** section with details and past bootcamp info (VTSEVA volunteer camp story)
+- **Tournaments** section
+- **Workshops & Special Events**
+- **Event Calendar** — a visual monthly calendar showing upcoming events
+- **Registration Info** — links to external Google Forms for sign-up
 
+### 5. Blog *(placeholder)*
+- A simple "Coming Soon" page to hold the spot in navigation
+
+### 6. Contact Us
+- **Contact form** (name, email, message) with validation
+- **Contact details**: email (taruntubati9@gmail.com), phone placeholder, WhatsApp link
+- Toast notification on form submission (no backend — just confirmation UI for now)
+
+---
+
+## Design & Style
+- **Warm & approachable** palette: soft cream/warm white background, friendly navy/teal primary color, warm amber accents
+- Rounded corners, soft shadows, inviting typography
+- Chess piece icons/illustrations as decorative elements
+- Fully responsive — mobile-friendly navigation with hamburger menu
+- Smooth scroll animations between sections
+
+## Navigation
+- **Top navigation bar** with logo placeholder + links: Home, About Us, Programs, Events, Blog, Contact Us
+- Mobile: collapsible hamburger menu
+- Sticky header for easy access while scrolling

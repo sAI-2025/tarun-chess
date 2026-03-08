@@ -18,7 +18,7 @@ import {
   getAdminEmail,
   setAdminEmail
 } from '@/lib/siteData';
-import type { SiteData, UpcomingEvent, Program, EventSection, PastBootcamp } from '@/lib/siteData';
+import type { SiteData, UpcomingEvent, Program, EventSection, PastBootcamp, EventPageCard } from '@/lib/siteData';
 import { Trash2, Plus, GripVertical, LogOut, Eye, Save, RotateCcw, Lock, Pencil, Calendar, BookOpen, LayoutGrid, CheckCircle, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -355,13 +355,10 @@ function ProgramsEditor() {
 function EventSectionsEditor() {
   const { draft, setDraft } = useDraft();
   const sections = draft.eventSections;
-  const pastBootcamp = draft.pastBootcamp;
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editingBootcamp, setEditingBootcamp] = useState(false);
   const [newSection, setNewSection] = useState<Partial<EventSection>>({ title: '', description: '', iconType: 'tent' });
 
   const setSections = (updated: EventSection[]) => setDraft(prev => ({ ...prev, eventSections: updated }));
-  const setPastBootcamp = (updated: PastBootcamp) => setDraft(prev => ({ ...prev, pastBootcamp: updated }));
 
   const handleAdd = () => {
     if (!newSection.title || !newSection.description) { toast.error('Please fill in all required fields'); return; }
@@ -372,7 +369,6 @@ function EventSectionsEditor() {
 
   const handleUpdate = (id: string, data: Partial<EventSection>) => setSections(sections.map((s) => (s.id === id ? { ...s, ...data } : s)));
   const handleDelete = (id: string) => { if (confirm('Delete this section?')) { setSections(sections.filter((s) => s.id !== id)); toast.info('Section removed — click Update to publish'); } };
-  const handleBootcampUpdate = (data: Partial<PastBootcamp>) => setPastBootcamp({ ...pastBootcamp, ...data });
 
   const drag = useDragReorder(sections, setSections);
 
@@ -432,26 +428,76 @@ function EventSectionsEditor() {
         ))}
       </div>
 
-      {/* Past Bootcamp Section */}
-      <Card className="shadow-sm">
-        <CardHeader><CardTitle className="text-lg flex items-center gap-2"><BookOpen className="h-5 w-5 text-primary" /> Past Bootcamp Section</CardTitle></CardHeader>
-        <CardContent>
-          {editingBootcamp ? (
-            <div className="space-y-3">
-              <div className="space-y-2"><Label>Title</Label><Input value={pastBootcamp.title} onChange={(e) => handleBootcampUpdate({ title: e.target.value })} /></div>
-              <div className="space-y-2"><Label>Paragraph 1</Label><Textarea value={pastBootcamp.paragraphs[0] || ''} onChange={(e) => handleBootcampUpdate({ paragraphs: [e.target.value, pastBootcamp.paragraphs[1] || ''] })} rows={3} /></div>
-              <div className="space-y-2"><Label>Paragraph 2</Label><Textarea value={pastBootcamp.paragraphs[1] || ''} onChange={(e) => handleBootcampUpdate({ paragraphs: [pastBootcamp.paragraphs[0] || '', e.target.value] })} rows={3} /></div>
-              <Button size="sm" onClick={() => setEditingBootcamp(false)} className="font-semibold"><Save className="h-4 w-4 mr-1" /> Done</Button>
-            </div>
-          ) : (
-            <div>
-              <p className="font-medium text-foreground mb-2">{pastBootcamp.title}</p>
-              {pastBootcamp.paragraphs.map((p, i) => (<p key={i} className="text-sm text-muted-foreground mb-2">{p}</p>))}
-              <Button variant="outline" size="sm" onClick={() => setEditingBootcamp(true)} className="gap-1.5 mt-1"><Pencil className="h-3.5 w-3.5" /> Edit</Button>
-            </div>
-          )}
+      {/* Event Page Cards */}
+      <EventPageCardsEditor />
+    </div>
+  );
+}
+
+// ─── Event Page Cards Editor (draft-based) ───────────────────────────
+function EventPageCardsEditor() {
+  const { draft, setDraft } = useDraft();
+  const cards = draft.eventsPageCards || [];
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [newCard, setNewCard] = useState<Partial<EventPageCard>>({ title: '', description: '', extraText: '' });
+
+  const setCards = (updated: EventPageCard[]) => setDraft(prev => ({ ...prev, eventsPageCards: updated }));
+
+  const handleAdd = () => {
+    if (!newCard.title || !newCard.description) { toast.error('Please fill in Title and Description'); return; }
+    setCards([...cards, { id: generateId(), title: newCard.title!, description: newCard.description!, extraText: newCard.extraText || undefined }]);
+    setNewCard({ title: '', description: '', extraText: '' });
+    toast.info('Event card added to draft — click Update to publish');
+  };
+
+  const handleUpdate = (id: string, data: Partial<EventPageCard>) => setCards(cards.map((c) => (c.id === id ? { ...c, ...data } : c)));
+  const handleDelete = (id: string) => { if (confirm('Delete this event card?')) { setCards(cards.filter((c) => c.id !== id)); toast.info('Card removed — click Update to publish'); } };
+  const drag = useDragReorder(cards, setCards);
+
+  return (
+    <div className="space-y-6">
+      <h3 className="font-display text-lg font-semibold text-foreground flex items-center gap-2 pt-4 border-t">
+        <BookOpen className="h-5 w-5 text-primary" /> Event Page Cards
+      </h3>
+
+      <Card className="shadow-sm border-dashed border-2 border-primary/20 bg-primary/[0.02]">
+        <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Plus className="h-5 w-5 text-primary" /> Add Event Card</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2"><Label>Event Title *</Label><Input value={newCard.title || ''} onChange={(e) => setNewCard({ ...newCard, title: e.target.value })} placeholder="Past Bootcamp: Summer Chess Camp 2025" /></div>
+          <div className="space-y-2"><Label>Description *</Label><Textarea value={newCard.description || ''} onChange={(e) => setNewCard({ ...newCard, description: e.target.value })} placeholder="Describe the event..." rows={3} /></div>
+          <div className="space-y-2"><Label>Extra Text (optional)</Label><Textarea value={newCard.extraText || ''} onChange={(e) => setNewCard({ ...newCard, extraText: e.target.value })} placeholder="Additional details, cost info, etc." rows={2} /></div>
+          <Button onClick={handleAdd} className="font-semibold"><Plus className="h-4 w-4 mr-1" /> Add Card</Button>
         </CardContent>
       </Card>
+
+      <p className="text-xs text-muted-foreground flex items-center gap-1"><GripVertical className="h-3 w-3" /> Drag cards to reorder</p>
+      <div className="space-y-3">
+        {cards.map((card, index) => (
+          <DraggableCard key={card.id} index={index} {...drag}>
+            {editingId === card.id ? (
+              <div className="space-y-3">
+                <div className="space-y-2"><Label>Title</Label><Input value={card.title} onChange={(e) => handleUpdate(card.id, { title: e.target.value })} /></div>
+                <div className="space-y-2"><Label>Description</Label><Textarea value={card.description} onChange={(e) => handleUpdate(card.id, { description: e.target.value })} rows={3} /></div>
+                <div className="space-y-2"><Label>Extra Text</Label><Textarea value={card.extraText || ''} onChange={(e) => handleUpdate(card.id, { extraText: e.target.value })} rows={2} /></div>
+                <Button size="sm" onClick={() => setEditingId(null)} className="font-semibold"><Save className="h-4 w-4 mr-1" /> Done</Button>
+              </div>
+            ) : (
+              <div className="flex items-start gap-3">
+                <div className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground transition-colors p-1 pt-1"><GripVertical className="h-5 w-5" /></div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-foreground">{card.title}</p>
+                  <p className="text-sm text-muted-foreground line-clamp-2">{card.description}</p>
+                  {card.extraText && <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{card.extraText}</p>}
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setEditingId(card.id)} className="gap-1.5"><Pencil className="h-3.5 w-3.5" /> Edit</Button>
+                  <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => handleDelete(card.id)}><Trash2 className="h-4 w-4" /></Button>
+                </div>
+              </div>
+            )}
+          </DraggableCard>
+        ))}
+      </div>
     </div>
   );
 }
