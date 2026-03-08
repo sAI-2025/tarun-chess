@@ -18,7 +18,7 @@ import {
   getAdminEmail,
   setAdminEmail
 } from '@/lib/siteData';
-import type { SiteData, UpcomingEvent, Program, EventSection, PastBootcamp } from '@/lib/siteData';
+import type { SiteData, UpcomingEvent, Program, EventSection, PastBootcamp, EventPageCard } from '@/lib/siteData';
 import { Trash2, Plus, GripVertical, LogOut, Eye, Save, RotateCcw, Lock, Pencil, Calendar, BookOpen, LayoutGrid, CheckCircle, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -351,6 +351,69 @@ function ProgramsEditor() {
   );
 }
 
+// ─── Event Page Cards Editor (draft-based) ───────────────────────────
+function EventPageCardsEditor() {
+  const { draft, setDraft } = useDraft();
+  const cards = draft.eventsPageCards;
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [newCard, setNewCard] = useState<Partial<EventPageCard>>({ title: '', description: '', extraText: '' });
+
+  const setCards = (updated: EventPageCard[]) => setDraft(prev => ({ ...prev, eventsPageCards: updated }));
+
+  const handleAdd = () => {
+    if (!newCard.title || !newCard.description) { toast.error('Please fill in title and description'); return; }
+    setCards([...cards, { id: generateId(), title: newCard.title!, description: newCard.description!, extraText: newCard.extraText || undefined }]);
+    setNewCard({ title: '', description: '', extraText: '' });
+    toast.info('Event card added to draft — click Update to publish');
+  };
+
+  const handleUpdate = (id: string, data: Partial<EventPageCard>) => setCards(cards.map((c) => (c.id === id ? { ...c, ...data } : c)));
+  const handleDelete = (id: string) => { if (confirm('Delete this event card?')) { setCards(cards.filter((c) => c.id !== id)); toast.info('Card removed — click Update to publish'); } };
+  const drag = useDragReorder(cards, setCards);
+
+  return (
+    <div className="space-y-6">
+      <Card className="shadow-sm border-dashed border-2 border-primary/20 bg-primary/[0.02]">
+        <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Plus className="h-5 w-5 text-primary" /> Add Event Card</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2"><Label>Event Title *</Label><Input value={newCard.title || ''} onChange={(e) => setNewCard({ ...newCard, title: e.target.value })} placeholder="Summer Chess Camp 2025" /></div>
+          <div className="space-y-2"><Label>Description *</Label><Textarea value={newCard.description || ''} onChange={(e) => setNewCard({ ...newCard, description: e.target.value })} placeholder="Details about the event..." rows={3} /></div>
+          <div className="space-y-2"><Label>Extra Text (optional)</Label><Textarea value={newCard.extraText || ''} onChange={(e) => setNewCard({ ...newCard, extraText: e.target.value })} placeholder="Additional information..." rows={2} /></div>
+          <Button onClick={handleAdd} className="font-semibold"><Plus className="h-4 w-4 mr-1" /> Save Card</Button>
+        </CardContent>
+      </Card>
+      <p className="text-xs text-muted-foreground flex items-center gap-1"><GripVertical className="h-3 w-3" /> Drag cards to reorder</p>
+      <div className="space-y-3">
+        {cards.map((card, index) => (
+          <DraggableCard key={card.id} index={index} {...drag}>
+            {editingId === card.id ? (
+              <div className="space-y-3">
+                <div className="space-y-2"><Label>Title</Label><Input value={card.title} onChange={(e) => handleUpdate(card.id, { title: e.target.value })} placeholder="Title" /></div>
+                <div className="space-y-2"><Label>Description</Label><Textarea value={card.description} onChange={(e) => handleUpdate(card.id, { description: e.target.value })} rows={3} /></div>
+                <div className="space-y-2"><Label>Extra Text</Label><Textarea value={card.extraText || ''} onChange={(e) => handleUpdate(card.id, { extraText: e.target.value })} rows={2} /></div>
+                <Button size="sm" onClick={() => setEditingId(null)} className="font-semibold"><Save className="h-4 w-4 mr-1" /> Done</Button>
+              </div>
+            ) : (
+              <div className="flex items-start gap-3">
+                <div className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground transition-colors p-1 pt-1"><GripVertical className="h-5 w-5" /></div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-foreground">{card.title}</p>
+                  <p className="text-sm text-muted-foreground line-clamp-2">{card.description}</p>
+                  {card.extraText && <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{card.extraText}</p>}
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setEditingId(card.id)} className="gap-1.5"><Pencil className="h-3.5 w-3.5" /> Edit</Button>
+                  <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => handleDelete(card.id)}><Trash2 className="h-4 w-4" /></Button>
+                </div>
+              </div>
+            )}
+          </DraggableCard>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Event Sections Editor (draft-based) ─────────────────────────────
 function EventSectionsEditor() {
   const { draft, setDraft } = useDraft();
@@ -535,14 +598,16 @@ function AdminPanel() {
 
         <main className="container py-8 max-w-4xl">
           <Tabs defaultValue="events" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4 h-12">
+            <TabsList className="grid w-full grid-cols-5 h-12">
               <TabsTrigger value="events" className="gap-1.5 text-xs sm:text-sm"><Calendar className="h-4 w-4 hidden sm:block" /> Events</TabsTrigger>
               <TabsTrigger value="programs" className="gap-1.5 text-xs sm:text-sm"><BookOpen className="h-4 w-4 hidden sm:block" /> Programs</TabsTrigger>
-              <TabsTrigger value="event-sections" className="gap-1.5 text-xs sm:text-sm"><LayoutGrid className="h-4 w-4 hidden sm:block" /> Events Page</TabsTrigger>
+              <TabsTrigger value="event-cards" className="gap-1.5 text-xs sm:text-sm"><LayoutGrid className="h-4 w-4 hidden sm:block" /> Event Cards</TabsTrigger>
+              <TabsTrigger value="event-sections" className="gap-1.5 text-xs sm:text-sm"><LayoutGrid className="h-4 w-4 hidden sm:block" /> Sections</TabsTrigger>
               <TabsTrigger value="settings" className="gap-1.5 text-xs sm:text-sm"><Lock className="h-4 w-4 hidden sm:block" /> Settings</TabsTrigger>
             </TabsList>
             <TabsContent value="events"><UpcomingEventsEditor /></TabsContent>
             <TabsContent value="programs"><ProgramsEditor /></TabsContent>
+            <TabsContent value="event-cards"><EventPageCardsEditor /></TabsContent>
             <TabsContent value="event-sections"><EventSectionsEditor /></TabsContent>
             <TabsContent value="settings"><ChangeCredentialsSection /></TabsContent>
           </Tabs>
