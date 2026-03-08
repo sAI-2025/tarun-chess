@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { useSiteData } from "@/contexts/SiteDataContext";
-import type { EventSection } from "@/lib/siteData";
+import type { EventSection, EventPageCard } from "@/lib/siteData";
 
 const iconMap = {
   tent: Tent,
