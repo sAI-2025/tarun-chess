@@ -430,6 +430,42 @@ function EventSectionsEditor() {
 
       {/* Event Page Cards */}
       <EventPageCardsEditor />
+
+      {/* Registration Settings */}
+      <RegistrationEditor />
+    </div>
+  );
+}
+
+// ─── Registration Editor (draft-based) ───────────────────────────────
+function RegistrationEditor() {
+  const { draft, setDraft } = useDraft();
+  const eventsPage = draft.eventsPage;
+  const updateEventsPage = (data: Partial<EventsPageData>) => setDraft(prev => ({ ...prev, eventsPage: { ...prev.eventsPage, ...data } }));
+
+  return (
+    <div className="space-y-6">
+      <h3 className="font-display text-lg font-semibold text-foreground flex items-center gap-2 pt-4 border-t">
+        <Calendar className="h-5 w-5 text-primary" /> Registration Settings
+      </h3>
+      <Card className="shadow-sm">
+        <CardContent className="pt-6 space-y-4">
+          <div className="space-y-2">
+            <Label>Registration Link (URL)</Label>
+            <Input value={eventsPage.registerLink} onChange={e => updateEventsPage({ registerLink: e.target.value })} placeholder="https://forms.gle/..." />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Button Text</Label>
+              <Input value={eventsPage.registerText} onChange={e => updateEventsPage({ registerText: e.target.value })} placeholder="Register Now" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Registration Description</Label>
+            <Textarea value={eventsPage.registrationDescription} onChange={e => updateEventsPage({ registrationDescription: e.target.value })} rows={2} />
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
