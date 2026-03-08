@@ -18,8 +18,8 @@ import {
   getAdminEmail,
   setAdminEmail
 } from '@/lib/siteData';
-import type { SiteData, UpcomingEvent, Program, EventSection, PastBootcamp, EventPageCard } from '@/lib/siteData';
-import { Trash2, Plus, GripVertical, LogOut, Eye, Save, RotateCcw, Lock, Pencil, Calendar, BookOpen, LayoutGrid, CheckCircle, AlertCircle } from 'lucide-react';
+import type { SiteData, UpcomingEvent, Program, EventSection, PastBootcamp, EventPageCard, AboutFeature } from '@/lib/siteData';
+import { Trash2, Plus, GripVertical, LogOut, Eye, Save, RotateCcw, Lock, Pencil, Calendar, BookOpen, LayoutGrid, CheckCircle, AlertCircle, User } from 'lucide-react';
 import { toast } from 'sonner';
 
 // ─── Draft Context ───────────────────────────────────────────────────
@@ -502,6 +502,151 @@ function EventPageCardsEditor() {
   );
 }
 
+// ─── About Page Editor (draft-based) ─────────────────────────────────
+function AboutPageEditor() {
+  const { draft, setDraft } = useDraft();
+  const about = draft.aboutPage;
+  const [editingFeatureId, setEditingFeatureId] = useState<string | null>(null);
+  const [newFeature, setNewFeature] = useState<Partial<AboutFeature>>({ title: '', description: '', iconType: 'book' });
+
+  const updateAbout = (data: Partial<typeof about>) => setDraft(prev => ({ ...prev, aboutPage: { ...prev.aboutPage, ...data } }));
+  const setFeatures = (features: AboutFeature[]) => updateAbout({ features });
+
+  const handleAddFeature = () => {
+    if (!newFeature.title || !newFeature.description) { toast.error('Please fill in title and description'); return; }
+    setFeatures([...about.features, { id: generateId(), title: newFeature.title!, description: newFeature.description!, iconType: newFeature.iconType || 'book' }]);
+    setNewFeature({ title: '', description: '', iconType: 'book' });
+    toast.info('Feature added to draft — click Update to publish');
+  };
+
+  const handleUpdateFeature = (id: string, data: Partial<AboutFeature>) => setFeatures(about.features.map(f => f.id === id ? { ...f, ...data } : f));
+  const handleDeleteFeature = (id: string) => { if (confirm('Delete this feature card?')) { setFeatures(about.features.filter(f => f.id !== id)); toast.info('Feature removed — click Update to publish'); } };
+  const drag = useDragReorder(about.features, setFeatures);
+
+  const iconOptions = [
+    { value: 'book', label: 'Book' }, { value: 'target', label: 'Target' },
+    { value: 'star', label: 'Star' }, { value: 'user', label: 'User' },
+  ];
+
+  return (
+    <div className="space-y-8">
+      {/* Our Story */}
+      <Card className="shadow-sm">
+        <CardHeader><CardTitle className="text-lg">Our Story</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Section Title</Label>
+            <Input value={about.storyTitle} onChange={e => updateAbout({ storyTitle: e.target.value })} />
+          </div>
+          <div className="space-y-2">
+            <Label>Content (separate paragraphs with blank lines)</Label>
+            <Textarea value={about.storyParagraphs.join('\n\n')} onChange={e => updateAbout({ storyParagraphs: e.target.value.split(/\n\s*\n/).filter(Boolean) })} rows={10} />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Mission & Vision */}
+      <Card className="shadow-sm">
+        <CardHeader><CardTitle className="text-lg">Mission & Vision</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Mission Title</Label>
+              <Input value={about.missionTitle} onChange={e => updateAbout({ missionTitle: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Vision Title</Label>
+              <Input value={about.visionTitle} onChange={e => updateAbout({ visionTitle: e.target.value })} />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Mission Text</Label>
+            <Textarea value={about.missionText} onChange={e => updateAbout({ missionText: e.target.value })} rows={3} />
+          </div>
+          <div className="space-y-2">
+            <Label>Vision Text</Label>
+            <Textarea value={about.visionText} onChange={e => updateAbout({ visionText: e.target.value })} rows={3} />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Meet the Coach */}
+      <Card className="shadow-sm">
+        <CardHeader><CardTitle className="text-lg">Meet the Coach</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Section Title</Label>
+              <Input value={about.coachSectionTitle} onChange={e => updateAbout({ coachSectionTitle: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Coach Name</Label>
+              <Input value={about.coachName} onChange={e => updateAbout({ coachName: e.target.value })} />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Coach Bio (separate paragraphs with blank lines)</Label>
+            <Textarea value={about.coachParagraphs.join('\n\n')} onChange={e => updateAbout({ coachParagraphs: e.target.value.split(/\n\s*\n/).filter(Boolean) })} rows={8} />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Why Choose Us Features */}
+      <div className="space-y-6">
+        <h3 className="font-display text-lg font-semibold text-foreground">Why Choose Us — Feature Cards</h3>
+        <Card className="shadow-sm border-dashed border-2 border-primary/20 bg-primary/[0.02]">
+          <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Plus className="h-5 w-5 text-primary" /> Add Feature Card</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2"><Label>Title *</Label><Input value={newFeature.title || ''} onChange={e => setNewFeature({ ...newFeature, title: e.target.value })} placeholder="Feature title" /></div>
+              <div className="space-y-2"><Label>Icon</Label>
+                <Select value={newFeature.iconType || 'book'} onValueChange={(v: AboutFeature['iconType']) => setNewFeature({ ...newFeature, iconType: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{iconOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2"><Label>Description *</Label><Textarea value={newFeature.description || ''} onChange={e => setNewFeature({ ...newFeature, description: e.target.value })} rows={2} placeholder="Feature description" /></div>
+            <Button onClick={handleAddFeature} className="font-semibold"><Plus className="h-4 w-4 mr-1" /> Add Feature</Button>
+          </CardContent>
+        </Card>
+        <p className="text-xs text-muted-foreground flex items-center gap-1"><GripVertical className="h-3 w-3" /> Drag cards to reorder</p>
+        <div className="space-y-3">
+          {about.features.map((feature, index) => (
+            <DraggableCard key={feature.id} index={index} {...drag}>
+              {editingFeatureId === feature.id ? (
+                <div className="space-y-3">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Input value={feature.title} onChange={e => handleUpdateFeature(feature.id, { title: e.target.value })} placeholder="Title" />
+                    <Select value={feature.iconType} onValueChange={(v: AboutFeature['iconType']) => handleUpdateFeature(feature.id, { iconType: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>{iconOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  <Textarea value={feature.description} onChange={e => handleUpdateFeature(feature.id, { description: e.target.value })} rows={2} />
+                  <Button size="sm" onClick={() => setEditingFeatureId(null)} className="font-semibold"><Save className="h-4 w-4 mr-1" /> Done</Button>
+                </div>
+              ) : (
+                <div className="flex items-start gap-3">
+                  <div className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground transition-colors p-1 pt-1"><GripVertical className="h-5 w-5" /></div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-foreground">{feature.title}</p>
+                    <p className="text-sm text-muted-foreground line-clamp-2">{feature.description}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => setEditingFeatureId(feature.id)} className="gap-1.5"><Pencil className="h-3.5 w-3.5" /> Edit</Button>
+                    <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => handleDeleteFeature(feature.id)}><Trash2 className="h-4 w-4" /></Button>
+                  </div>
+                </div>
+              )}
+            </DraggableCard>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Admin Panel ────────────────────────────────────────────────
 function AdminPanel() {
   const navigate = useNavigate();
@@ -581,15 +726,17 @@ function AdminPanel() {
 
         <main className="container py-8 max-w-4xl">
           <Tabs defaultValue="events" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4 h-12">
+            <TabsList className="grid w-full grid-cols-5 h-12">
               <TabsTrigger value="events" className="gap-1.5 text-xs sm:text-sm"><Calendar className="h-4 w-4 hidden sm:block" /> Events</TabsTrigger>
               <TabsTrigger value="programs" className="gap-1.5 text-xs sm:text-sm"><BookOpen className="h-4 w-4 hidden sm:block" /> Programs</TabsTrigger>
               <TabsTrigger value="event-sections" className="gap-1.5 text-xs sm:text-sm"><LayoutGrid className="h-4 w-4 hidden sm:block" /> Events Page</TabsTrigger>
+              <TabsTrigger value="about" className="gap-1.5 text-xs sm:text-sm"><User className="h-4 w-4 hidden sm:block" /> About Page</TabsTrigger>
               <TabsTrigger value="settings" className="gap-1.5 text-xs sm:text-sm"><Lock className="h-4 w-4 hidden sm:block" /> Settings</TabsTrigger>
             </TabsList>
             <TabsContent value="events"><UpcomingEventsEditor /></TabsContent>
             <TabsContent value="programs"><ProgramsEditor /></TabsContent>
             <TabsContent value="event-sections"><EventSectionsEditor /></TabsContent>
+            <TabsContent value="about"><AboutPageEditor /></TabsContent>
             <TabsContent value="settings"><ChangeCredentialsSection /></TabsContent>
           </Tabs>
         </main>
