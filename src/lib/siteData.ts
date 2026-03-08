@@ -61,6 +61,7 @@ export interface SiteData {
   eventSections: EventSection[];
   pastBootcamp: PastBootcamp;
   eventsPageCards: EventPageCard[];
+  aboutPage: AboutPageData;
 }
 
 const defaultSiteData: SiteData = {
