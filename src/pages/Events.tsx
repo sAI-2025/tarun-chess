@@ -51,23 +51,20 @@ const Events = () => {
             </div>
           </motion.div>
 
-          {/* Event Page Cards (dynamic from admin) */}
+          {/* Past Bootcamp */}
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
-            <div className="space-y-6 mb-16">
-              {siteData.eventsPageCards.map((card) => (
-                <Card key={card.id} className="border-none shadow-md">
-                  <CardContent className="pt-6">
-                    <h3 className="font-display text-xl font-semibold text-foreground mb-3">
-                      {card.title}
-                    </h3>
-                    <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
-                      <p>{card.description}</p>
-                      {card.extraText && <p>{card.extraText}</p>}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <Card className="border-none shadow-md mb-16">
+              <CardContent className="pt-6">
+                <h3 className="font-display text-xl font-semibold text-foreground mb-3">
+                  {siteData.pastBootcamp.title}
+                </h3>
+                <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
+                  {siteData.pastBootcamp.paragraphs.map((p, i) => (
+                    <p key={i}>{p}</p>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </motion.div>
 
           {/* Calendar & Registration */}
