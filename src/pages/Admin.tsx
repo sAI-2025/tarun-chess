@@ -646,7 +646,7 @@ function AdminPanel() {
           <TabsContent value="events"><UpcomingEventsEditor /></TabsContent>
           <TabsContent value="programs"><ProgramsEditor /></TabsContent>
           <TabsContent value="event-sections"><EventSectionsEditor /></TabsContent>
-          <TabsContent value="settings"><ChangePasswordSection /></TabsContent>
+          <TabsContent value="settings"><ChangeCredentialsSection /></TabsContent>
         </Tabs>
       </main>
     </div>
