@@ -245,6 +245,20 @@ const defaultSiteData: SiteData = {
     registerText: 'Register Now',
     registrationDescription: 'Ready to sign up for an upcoming event? Use the link below to register through our Google Form.',
   },
+  footer: {
+    brandName: "Tarun's Chess Academy",
+    tagline: 'Building confident, thoughtful chess players — one clear idea at a time.',
+    contactEmail: 'tarun.tubati9@gmail.com',
+    copyrightText: "Tarun's Chess Academy. All rights reserved.",
+    quickLinks: [
+      { id: 'ql1', label: 'Home', path: '/' },
+      { id: 'ql2', label: 'About Us', path: '/about' },
+      { id: 'ql3', label: 'Programs', path: '/programs' },
+      { id: 'ql4', label: 'Events', path: '/events' },
+      { id: 'ql5', label: 'Contact Us', path: '/contact' },
+    ],
+    socialLinks: [],
+  },
 };
 
 const STORAGE_KEY = 'tarun_chess_site_data';
