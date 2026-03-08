@@ -18,8 +18,8 @@ import {
   getAdminEmail,
   setAdminEmail
 } from '@/lib/siteData';
-import type { SiteData, UpcomingEvent, Program, EventSection, PastBootcamp, EventPageCard, AboutFeature, HomePageData, ContactPageData, EventsPageData } from '@/lib/siteData';
-import { Trash2, Plus, GripVertical, LogOut, Eye, Save, RotateCcw, Lock, Pencil, Calendar, BookOpen, LayoutGrid, CheckCircle, AlertCircle, User, Home, Upload, X, Mail } from 'lucide-react';
+import type { SiteData, UpcomingEvent, Program, EventSection, PastBootcamp, EventPageCard, AboutFeature, HomePageData, ContactPageData, EventsPageData, FooterData, FooterQuickLink, FooterSocialLink } from '@/lib/siteData';
+import { Trash2, Plus, GripVertical, LogOut, Eye, Save, RotateCcw, Lock, Pencil, Calendar, BookOpen, LayoutGrid, CheckCircle, AlertCircle, User, Home, Upload, X, Mail, PanelBottom } from 'lucide-react';
 import { toast } from 'sonner';
 
 // ─── Draft Context ───────────────────────────────────────────────────
@@ -850,7 +850,110 @@ function ContactPageEditor() {
     </div>
   );
 }
+// ─── Footer Editor (draft-based) ─────────────────────────────────────
+function FooterEditor() {
+  const { draft, setDraft } = useDraft();
+  const footer = draft.footer;
+  const updateFooter = (data: Partial<FooterData>) => setDraft(prev => ({ ...prev, footer: { ...prev.footer, ...data } }));
 
+  const updateQuickLink = (id: string, data: Partial<FooterQuickLink>) =>
+    updateFooter({ quickLinks: footer.quickLinks.map(l => l.id === id ? { ...l, ...data } : l) });
+  const removeQuickLink = (id: string) => updateFooter({ quickLinks: footer.quickLinks.filter(l => l.id !== id) });
+  const addQuickLink = () => updateFooter({ quickLinks: [...footer.quickLinks, { id: generateId(), label: '', path: '/' }] });
+
+  const updateSocialLink = (id: string, data: Partial<FooterSocialLink>) =>
+    updateFooter({ socialLinks: footer.socialLinks.map(l => l.id === id ? { ...l, ...data } : l) });
+  const removeSocialLink = (id: string) => updateFooter({ socialLinks: footer.socialLinks.filter(l => l.id !== id) });
+  const addSocialLink = () => updateFooter({ socialLinks: [...footer.socialLinks, { id: generateId(), platform: 'facebook', url: '' }] });
+
+  const quickDrag = useDragReorder(footer.quickLinks, (items) => updateFooter({ quickLinks: items }));
+
+  const platformOptions = ['Facebook', 'Twitter', 'Instagram', 'YouTube', 'LinkedIn'];
+
+  return (
+    <div className="space-y-8">
+      <Card className="shadow-sm">
+        <CardHeader><CardTitle className="text-lg">Brand & Text</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Brand Name</Label>
+            <Input value={footer.brandName} onChange={e => updateFooter({ brandName: e.target.value })} />
+          </div>
+          <div className="space-y-2">
+            <Label>Tagline</Label>
+            <Textarea value={footer.tagline} onChange={e => updateFooter({ tagline: e.target.value })} rows={2} />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Contact Email</Label>
+              <Input value={footer.contactEmail} onChange={e => updateFooter({ contactEmail: e.target.value })} placeholder="email@example.com" />
+            </div>
+            <div className="space-y-2">
+              <Label>Copyright Text</Label>
+              <Input value={footer.copyrightText} onChange={e => updateFooter({ copyrightText: e.target.value })} />
+              <p className="text-xs text-muted-foreground">Year is prepended automatically</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-sm">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg">Quick Links</CardTitle>
+            <Button size="sm" variant="outline" onClick={addQuickLink} className="gap-1.5"><Plus className="h-4 w-4" /> Add Link</Button>
+          </div>
+          <p className="text-xs text-muted-foreground flex items-center gap-1"><GripVertical className="h-3 w-3" /> Drag to reorder</p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {footer.quickLinks.map((link, index) => (
+            <DraggableCard key={link.id} index={index} {...quickDrag}>
+              <div className="flex items-center gap-3">
+                <div className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground p-1"><GripVertical className="h-5 w-5" /></div>
+                <div className="flex-1 grid gap-3 sm:grid-cols-2">
+                  <Input value={link.label} onChange={e => updateQuickLink(link.id, { label: e.target.value })} placeholder="Link Label" />
+                  <Input value={link.path} onChange={e => updateQuickLink(link.id, { path: e.target.value })} placeholder="/path" />
+                </div>
+                <Button variant="destructive" size="icon" className="h-8 w-8 shrink-0" onClick={() => removeQuickLink(link.id)}><Trash2 className="h-4 w-4" /></Button>
+              </div>
+            </DraggableCard>
+          ))}
+          {footer.quickLinks.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No quick links added yet.</p>}
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-sm">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg">Social Media Links</CardTitle>
+            <Button size="sm" variant="outline" onClick={addSocialLink} className="gap-1.5"><Plus className="h-4 w-4" /> Add Social</Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {footer.socialLinks.map((link) => (
+            <Card key={link.id} className="shadow-sm">
+              <CardContent className="py-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-36 shrink-0">
+                    <Select value={link.platform} onValueChange={v => updateSocialLink(link.id, { platform: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {platformOptions.map(p => <SelectItem key={p} value={p.toLowerCase()}>{p}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Input className="flex-1" value={link.url} onChange={e => updateSocialLink(link.id, { url: e.target.value })} placeholder="https://..." />
+                  <Button variant="destructive" size="icon" className="h-8 w-8 shrink-0" onClick={() => removeSocialLink(link.id)}><Trash2 className="h-4 w-4" /></Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+          {footer.socialLinks.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No social links added yet.</p>}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
 function AdminPanel() {
   const navigate = useNavigate();
@@ -930,13 +1033,14 @@ function AdminPanel() {
 
         <main className="container py-8 max-w-4xl">
           <Tabs defaultValue="events" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-7 h-12">
+            <TabsList className="grid w-full grid-cols-8 h-12">
               <TabsTrigger value="home" className="gap-1.5 text-xs sm:text-sm"><Home className="h-4 w-4 hidden sm:block" /> Home</TabsTrigger>
               <TabsTrigger value="events" className="gap-1.5 text-xs sm:text-sm"><Calendar className="h-4 w-4 hidden sm:block" /> Events</TabsTrigger>
               <TabsTrigger value="programs" className="gap-1.5 text-xs sm:text-sm"><BookOpen className="h-4 w-4 hidden sm:block" /> Programs</TabsTrigger>
               <TabsTrigger value="event-sections" className="gap-1.5 text-xs sm:text-sm"><LayoutGrid className="h-4 w-4 hidden sm:block" /> Events Page</TabsTrigger>
               <TabsTrigger value="about" className="gap-1.5 text-xs sm:text-sm"><User className="h-4 w-4 hidden sm:block" /> About</TabsTrigger>
               <TabsTrigger value="contact" className="gap-1.5 text-xs sm:text-sm"><Mail className="h-4 w-4 hidden sm:block" /> Contact</TabsTrigger>
+              <TabsTrigger value="footer" className="gap-1.5 text-xs sm:text-sm"><PanelBottom className="h-4 w-4 hidden sm:block" /> Footer</TabsTrigger>
               <TabsTrigger value="settings" className="gap-1.5 text-xs sm:text-sm"><Lock className="h-4 w-4 hidden sm:block" /> Settings</TabsTrigger>
             </TabsList>
             <TabsContent value="home"><HomePageEditor /></TabsContent>
@@ -945,6 +1049,7 @@ function AdminPanel() {
             <TabsContent value="event-sections"><EventSectionsEditor /></TabsContent>
             <TabsContent value="about"><AboutPageEditor /></TabsContent>
             <TabsContent value="contact"><ContactPageEditor /></TabsContent>
+            <TabsContent value="footer"><FooterEditor /></TabsContent>
             <TabsContent value="settings"><ChangeCredentialsSection /></TabsContent>
           </Tabs>
         </main>

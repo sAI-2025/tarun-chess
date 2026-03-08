@@ -85,6 +85,27 @@ export interface EventsPageData {
   registrationDescription: string;
 }
 
+export interface FooterQuickLink {
+  id: string;
+  label: string;
+  path: string;
+}
+
+export interface FooterSocialLink {
+  id: string;
+  platform: string;
+  url: string;
+}
+
+export interface FooterData {
+  brandName: string;
+  tagline: string;
+  contactEmail: string;
+  copyrightText: string;
+  quickLinks: FooterQuickLink[];
+  socialLinks: FooterSocialLink[];
+}
+
 export interface SiteData {
   upcomingEvents: UpcomingEvent[];
   programs: Program[];
@@ -95,6 +116,7 @@ export interface SiteData {
   homePage: HomePageData;
   contactPage: ContactPageData;
   eventsPage: EventsPageData;
+  footer: FooterData;
 }
 
 const defaultSiteData: SiteData = {
@@ -222,6 +244,20 @@ const defaultSiteData: SiteData = {
     registerLink: 'https://forms.gle/bkeWgrhbDyHGckok7',
     registerText: 'Register Now',
     registrationDescription: 'Ready to sign up for an upcoming event? Use the link below to register through our Google Form.',
+  },
+  footer: {
+    brandName: "Tarun's Chess Academy",
+    tagline: 'Building confident, thoughtful chess players — one clear idea at a time.',
+    contactEmail: 'tarun.tubati9@gmail.com',
+    copyrightText: "Tarun's Chess Academy. All rights reserved.",
+    quickLinks: [
+      { id: 'ql1', label: 'Home', path: '/' },
+      { id: 'ql2', label: 'About Us', path: '/about' },
+      { id: 'ql3', label: 'Programs', path: '/programs' },
+      { id: 'ql4', label: 'Events', path: '/events' },
+      { id: 'ql5', label: 'Contact Us', path: '/contact' },
+    ],
+    socialLinks: [],
   },
 };
 
