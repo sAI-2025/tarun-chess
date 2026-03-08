@@ -41,7 +41,7 @@ const Contact = () => {
     const body = encodeURIComponent(
       `Name: ${form.name}\nEmail: ${form.email}\n\nMessage:\n${form.message}`
     );
-    const mailtoLink = `mailto:taruntubati9@gmail.com?subject=${subject}&body=${body}`;
+    const mailtoLink = `mailto:tarun.tubati9@gmail.com?subject=${subject}&body=${body}`;
     window.open(mailtoLink, "_blank");
 
     toast({
@@ -110,18 +110,18 @@ const Contact = () => {
             <div>
               <h3 className="font-display text-xl font-semibold text-foreground mb-4">Get in Touch</h3>
               <div className="space-y-4">
-                <a href="mailto:taruntubati9@gmail.com" className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors">
+                <a href="mailto:tarun.tubati9@gmail.com" className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
                     <Mail className="h-5 w-5 text-primary" />
                   </div>
-                  <span className="text-sm">taruntubati9@gmail.com</span>
+                  <span className="text-sm">tarun.tubati9@gmail.com</span>
                 </a>
-                <div className="flex items-center gap-3 text-muted-foreground">
+                <a href="tel:+19846876038" className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
                     <Phone className="h-5 w-5 text-primary" />
                   </div>
-                  <span className="text-sm">Phone available upon request</span>
-                </div>
+                  <span className="text-sm">+1 (984) 687-6038</span>
+                </a>
                 <a
                   href={`https://wa.me/?text=${encodeURIComponent("Hi! I'm interested in Tarun's Chess Academy.")}`}
                   target="_blank"
