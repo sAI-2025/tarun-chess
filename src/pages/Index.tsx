@@ -94,23 +94,22 @@ const Index = () => {
               custom={0}
               className="mb-4 text-sm font-semibold uppercase tracking-widest text-accent"
             >
-              Welcome to Tarun's Chess Academy
+              {siteData.homePage.heroTagline}
             </motion.p>
             <motion.h1
               variants={fadeUp}
               custom={1}
               className="font-display text-4xl font-bold leading-tight text-primary-foreground md:text-5xl lg:text-6xl drop-shadow-lg"
             >
-              Build Confidence,{" "}
-              <span className="text-accent">One Move at a Time</span>
+              {siteData.homePage.heroTitle}{" "}
+              <span className="text-accent">{siteData.homePage.heroTitleAccent}</span>
             </motion.h1>
             <motion.p
               variants={fadeUp}
               custom={2}
               className="mt-6 text-lg text-primary-foreground/85 drop-shadow"
             >
-              Patient, fundamentals-first chess instruction that helps students
-              think clearly, play confidently, and love the game.
+              {siteData.homePage.heroDescription}
             </motion.p>
             <motion.div
               variants={fadeUp}
@@ -118,7 +117,7 @@ const Index = () => {
               className="mt-8 flex flex-wrap justify-center gap-4"
             >
               <Button asChild size="lg" className="rounded-full bg-accent text-accent-foreground hover:bg-accent/90 px-8 shadow-lg">
-                <a href="https://api.whatsapp.com/send/?phone=%2B19846876038&text=Hi%21+I%27m+interested+in+learning+more+about+Tarun's+Chess+Academy.+Please+share+details+about+your+chess+coaching+programs.&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer">Join Now</a>
+                <a href={siteData.homePage.ctaLink} target="_blank" rel="noopener noreferrer">{siteData.homePage.ctaText}</a>
               </Button>
               <Button
                 asChild
@@ -127,7 +126,7 @@ const Index = () => {
                 className="rounded-full px-8 border border-primary-foreground/30 bg-transparent text-primary-foreground hover:border-accent hover:text-accent hover:bg-transparent"
               >
                 <Link to="/programs">
-                  Explore Programs <ArrowRight className="ml-1 h-4 w-4" />
+                  {siteData.homePage.secondaryCtaText} <ArrowRight className="ml-1 h-4 w-4" />
                 </Link>
               </Button>
             </motion.div>
