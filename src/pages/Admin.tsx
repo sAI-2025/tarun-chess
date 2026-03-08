@@ -8,13 +8,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { useSiteData } from '@/contexts/SiteDataContext';
-import {
-  validateAdmin,
-  isAdminLoggedIn,
-  setAdminLoggedIn,
+import { 
+  validateAdmin, 
+  isAdminLoggedIn, 
+  setAdminLoggedIn, 
   generateId,
   getAdminPassword,
-  setAdminPassword
+  setAdminPassword,
+  getAdminEmail,
+  setAdminEmail
 } from '@/lib/siteData';
 import type { UpcomingEvent, Program, EventSection } from '@/lib/siteData';
 import { Trash2, Plus, GripVertical, LogOut, Eye, Save, RotateCcw, Lock, Pencil, Calendar, BookOpen, LayoutGrid } from 'lucide-react';
