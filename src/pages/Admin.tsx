@@ -75,6 +75,72 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
   );
 }
 
+// Change Login ID Component
+function ChangeLoginIdSection() {
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newLoginId, setNewLoginId] = useState('');
+
+  const handleChangeLoginId = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (currentPassword !== getAdminPassword()) {
+      toast.error('Current password is incorrect');
+      return;
+    }
+    
+    if (!newLoginId || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newLoginId)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+    
+    setAdminEmail(newLoginId);
+    setCurrentPassword('');
+    setNewLoginId('');
+    toast.success('Login ID changed successfully');
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <Mail className="h-5 w-5" />
+          Change Login ID
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleChangeLoginId} className="space-y-4">
+          <div className="space-y-2">
+            <Label>Current Login ID</Label>
+            <Input value={getAdminEmail()} disabled className="bg-muted" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="loginIdPassword">Current Password</Label>
+            <Input
+              id="loginIdPassword"
+              type="password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="newLoginId">New Login ID (Email)</Label>
+            <Input
+              id="newLoginId"
+              type="email"
+              value={newLoginId}
+              onChange={(e) => setNewLoginId(e.target.value)}
+              placeholder="newemail@example.com"
+            />
+          </div>
+          <Button type="submit" variant="outline">
+            Update Login ID
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
 // Change Password Component
 function ChangePasswordSection() {
   const [currentPassword, setCurrentPassword] = useState('');
