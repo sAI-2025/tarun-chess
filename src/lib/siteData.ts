@@ -45,7 +45,21 @@ export interface AboutPageData {
   coachSectionTitle: string;
   coachName: string;
   coachParagraphs: string[];
+  coachPhotoUrl?: string;
   features: AboutFeature[];
+}
+
+export interface HomePageData {
+  heroTagline: string;
+  heroTitle: string;
+  heroTitleAccent: string;
+  heroDescription: string;
+  ctaText: string;
+  ctaLink: string;
+  secondaryCtaText: string;
+  ctaSectionTitle: string;
+  ctaSectionDescription: string;
+  ctaSectionButtonText: string;
 }
 
 export interface EventPageCard {
