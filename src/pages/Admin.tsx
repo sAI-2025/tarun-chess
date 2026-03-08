@@ -18,7 +18,7 @@ import {
   getAdminEmail,
   setAdminEmail
 } from '@/lib/siteData';
-import type { SiteData, UpcomingEvent, Program, EventSection, PastBootcamp } from '@/lib/siteData';
+import type { SiteData, UpcomingEvent, Program, EventSection, PastBootcamp, EventPageCard } from '@/lib/siteData';
 import { Trash2, Plus, GripVertical, LogOut, Eye, Save, RotateCcw, Lock, Pencil, Calendar, BookOpen, LayoutGrid, CheckCircle, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
