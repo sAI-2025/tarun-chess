@@ -59,8 +59,6 @@ const Index = () => {
             src={heroBanner}
             alt="Chess pieces on a warm wooden board"
             className="h-full w-full object-cover"
-            fetchPriority="high"
-            decoding="async"
           />
         </motion.div>
 
