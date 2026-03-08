@@ -795,6 +795,63 @@ function HomePageEditor() {
 }
 
 
+// ─── Contact Page Editor (draft-based) ───────────────────────────────
+function ContactPageEditor() {
+  const { draft, setDraft } = useDraft();
+  const contact = draft.contactPage;
+  const updateContact = (data: Partial<ContactPageData>) => setDraft(prev => ({ ...prev, contactPage: { ...prev.contactPage, ...data } }));
+
+  return (
+    <div className="space-y-8">
+      <Card className="shadow-sm">
+        <CardHeader><CardTitle className="text-lg">Page Header</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Page Title</Label>
+            <Input value={contact.pageTitle} onChange={e => updateContact({ pageTitle: e.target.value })} />
+          </div>
+          <div className="space-y-2">
+            <Label>Page Subtitle</Label>
+            <Textarea value={contact.pageSubtitle} onChange={e => updateContact({ pageSubtitle: e.target.value })} rows={2} />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-sm">
+        <CardHeader><CardTitle className="text-lg">Contact Information</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Email Address</Label>
+              <Input value={contact.email} onChange={e => updateContact({ email: e.target.value })} placeholder="email@example.com" />
+            </div>
+            <div className="space-y-2">
+              <Label>Form Recipient Email</Label>
+              <Input value={contact.formRecipientEmail} onChange={e => updateContact({ formRecipientEmail: e.target.value })} placeholder="email@example.com" />
+              <p className="text-xs text-muted-foreground">The email address the contact form sends to</p>
+            </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Phone (Display)</Label>
+              <Input value={contact.phone} onChange={e => updateContact({ phone: e.target.value })} placeholder="+1 (984) 687-6038" />
+            </div>
+            <div className="space-y-2">
+              <Label>Phone (Raw, for tel: link)</Label>
+              <Input value={contact.phoneRaw} onChange={e => updateContact({ phoneRaw: e.target.value })} placeholder="+19846876038" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>WhatsApp Default Message</Label>
+            <Textarea value={contact.whatsappMessage} onChange={e => updateContact({ whatsappMessage: e.target.value })} rows={2} />
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+
 function AdminPanel() {
   const navigate = useNavigate();
   const { siteData, updateSiteData, resetToDefault } = useSiteData();
