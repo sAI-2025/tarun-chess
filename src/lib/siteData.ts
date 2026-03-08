@@ -28,11 +28,19 @@ export interface PastBootcamp {
   paragraphs: string[];
 }
 
+export interface EventPageCard {
+  id: string;
+  title: string;
+  description: string;
+  extraText?: string;
+}
+
 export interface SiteData {
   upcomingEvents: UpcomingEvent[];
   programs: Program[];
   eventSections: EventSection[];
   pastBootcamp: PastBootcamp;
+  eventsPageCards: EventPageCard[];
 }
 
 const defaultSiteData: SiteData = {
