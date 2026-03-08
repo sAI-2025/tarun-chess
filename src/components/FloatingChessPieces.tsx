@@ -18,7 +18,7 @@ const FloatingChessPieces = () => {
         <motion.span
           key={i}
           className={`absolute ${piece.size} text-primary/10 select-none`}
-          style={{ left: piece.x, top: piece.y }}
+          style={{ left: piece.x, top: piece.y, willChange: "transform, opacity" }}
           initial={{ opacity: 0, y: 20 }}
           animate={{
             opacity: [0, 0.15, 0.08, 0.15, 0],

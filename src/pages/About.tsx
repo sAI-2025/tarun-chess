@@ -71,6 +71,8 @@ const About = () => {
                       src={about.coachPhotoUrl || tarunPhoto}
                       alt={`${about.coachName} — Chess Coach`}
                       className="h-full w-full object-cover object-top"
+                      loading="lazy"
+                      decoding="async"
                     />
                   </div>
                </div>
