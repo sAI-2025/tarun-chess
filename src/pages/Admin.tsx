@@ -161,13 +161,13 @@ function ChangePasswordSection() {
 
 // ─── Draggable Card Wrapper ──────────────────────────────────────────
 function DraggableCard({
-  index, draggingIdx, dragOverIdx, onDragStart, onDragEnter, onDragOver, onDrop, onDragEnd, children
+  index, draggingIdx, dragOverIdx, handleDragStart, handleDragEnter, handleDragOver, handleDrop, handleDragEnd, children
 }: {
   index: number; draggingIdx: number | null; dragOverIdx: number | null;
-  onDragStart: (i: number) => (e: DragEvent) => void;
-  onDragEnter: (i: number) => () => void;
-  onDragOver: (e: DragEvent) => void;
-  onDrop: () => void; onDragEnd: () => void;
+  handleDragStart: (i: number) => (e: DragEvent) => void;
+  handleDragEnter: (i: number) => () => void;
+  handleDragOver: (e: DragEvent) => void;
+  handleDrop: () => void; handleDragEnd: () => void;
   children: React.ReactNode;
 }) {
   const isDragging = draggingIdx === index;
@@ -176,11 +176,11 @@ function DraggableCard({
   return (
     <div
       draggable
-      onDragStart={onDragStart(index)}
-      onDragEnter={onDragEnter(index)}
-      onDragOver={onDragOver}
-      onDrop={onDrop}
-      onDragEnd={onDragEnd}
+      onDragStart={handleDragStart(index)}
+      onDragEnter={handleDragEnter(index)}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+      onDragEnd={handleDragEnd}
       className={`transition-all duration-200 rounded-lg ${isDragging ? 'opacity-40 scale-[0.98]' : ''} ${isOver ? 'ring-2 ring-primary/50 ring-offset-2' : ''}`}
     >
       <Card className="shadow-sm hover:shadow-md transition-shadow">
