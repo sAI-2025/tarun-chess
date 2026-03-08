@@ -930,12 +930,13 @@ function AdminPanel() {
 
         <main className="container py-8 max-w-4xl">
           <Tabs defaultValue="events" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6 h-12">
+            <TabsList className="grid w-full grid-cols-7 h-12">
               <TabsTrigger value="home" className="gap-1.5 text-xs sm:text-sm"><Home className="h-4 w-4 hidden sm:block" /> Home</TabsTrigger>
               <TabsTrigger value="events" className="gap-1.5 text-xs sm:text-sm"><Calendar className="h-4 w-4 hidden sm:block" /> Events</TabsTrigger>
               <TabsTrigger value="programs" className="gap-1.5 text-xs sm:text-sm"><BookOpen className="h-4 w-4 hidden sm:block" /> Programs</TabsTrigger>
               <TabsTrigger value="event-sections" className="gap-1.5 text-xs sm:text-sm"><LayoutGrid className="h-4 w-4 hidden sm:block" /> Events Page</TabsTrigger>
               <TabsTrigger value="about" className="gap-1.5 text-xs sm:text-sm"><User className="h-4 w-4 hidden sm:block" /> About</TabsTrigger>
+              <TabsTrigger value="contact" className="gap-1.5 text-xs sm:text-sm"><Mail className="h-4 w-4 hidden sm:block" /> Contact</TabsTrigger>
               <TabsTrigger value="settings" className="gap-1.5 text-xs sm:text-sm"><Lock className="h-4 w-4 hidden sm:block" /> Settings</TabsTrigger>
             </TabsList>
             <TabsContent value="home"><HomePageEditor /></TabsContent>
@@ -943,6 +944,7 @@ function AdminPanel() {
             <TabsContent value="programs"><ProgramsEditor /></TabsContent>
             <TabsContent value="event-sections"><EventSectionsEditor /></TabsContent>
             <TabsContent value="about"><AboutPageEditor /></TabsContent>
+            <TabsContent value="contact"><ContactPageEditor /></TabsContent>
             <TabsContent value="settings"><ChangeCredentialsSection /></TabsContent>
           </Tabs>
         </main>
