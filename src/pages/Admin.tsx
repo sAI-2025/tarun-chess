@@ -598,14 +598,16 @@ function AdminPanel() {
 
         <main className="container py-8 max-w-4xl">
           <Tabs defaultValue="events" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4 h-12">
+            <TabsList className="grid w-full grid-cols-5 h-12">
               <TabsTrigger value="events" className="gap-1.5 text-xs sm:text-sm"><Calendar className="h-4 w-4 hidden sm:block" /> Events</TabsTrigger>
               <TabsTrigger value="programs" className="gap-1.5 text-xs sm:text-sm"><BookOpen className="h-4 w-4 hidden sm:block" /> Programs</TabsTrigger>
-              <TabsTrigger value="event-sections" className="gap-1.5 text-xs sm:text-sm"><LayoutGrid className="h-4 w-4 hidden sm:block" /> Events Page</TabsTrigger>
+              <TabsTrigger value="event-cards" className="gap-1.5 text-xs sm:text-sm"><LayoutGrid className="h-4 w-4 hidden sm:block" /> Event Cards</TabsTrigger>
+              <TabsTrigger value="event-sections" className="gap-1.5 text-xs sm:text-sm"><LayoutGrid className="h-4 w-4 hidden sm:block" /> Sections</TabsTrigger>
               <TabsTrigger value="settings" className="gap-1.5 text-xs sm:text-sm"><Lock className="h-4 w-4 hidden sm:block" /> Settings</TabsTrigger>
             </TabsList>
             <TabsContent value="events"><UpcomingEventsEditor /></TabsContent>
             <TabsContent value="programs"><ProgramsEditor /></TabsContent>
+            <TabsContent value="event-cards"><EventPageCardsEditor /></TabsContent>
             <TabsContent value="event-sections"><EventSectionsEditor /></TabsContent>
             <TabsContent value="settings"><ChangeCredentialsSection /></TabsContent>
           </Tabs>
