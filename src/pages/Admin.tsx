@@ -621,6 +621,9 @@ function AdminPanel() {
             <h1 className="font-display text-xl font-bold text-foreground">Admin Panel</h1>
           </div>
           <div className="flex items-center gap-2">
+            <Button size="sm" onClick={() => { toast.success('All changes are live! Refresh the site to see updates.'); }} className="gap-1.5 font-semibold bg-primary hover:bg-primary/90">
+              <CheckCircle className="h-4 w-4" /> Update
+            </Button>
             <Button variant="outline" size="sm" asChild className="gap-1.5">
               <a href="/" target="_blank"><Eye className="h-4 w-4" /> View Site</a>
             </Button>
