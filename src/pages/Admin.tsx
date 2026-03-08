@@ -955,7 +955,7 @@ function FooterEditor() {
   );
 }
 
-
+function AdminPanel() {
   const navigate = useNavigate();
   const { siteData, updateSiteData, resetToDefault } = useSiteData();
 
