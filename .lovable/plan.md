@@ -1,60 +1,97 @@
 
-# Chess Academy Website
 
-A warm, approachable informational website for Tarun's Chess Academy — designed to attract parents and students, showcase programs, and direct visitors to external registration.
+# Secure Admin Authentication with Supabase
 
----
+## Important Platform Constraints
 
-## Pages & Structure
+This is a **Lovable project** (React + Vite), **not** Next.js/Vercel. Key differences from your request:
 
-### 1. Home
-- **Hero section** with a welcoming headline, chess-themed imagery (placeholder), and tagline about building confident chess players
-- **Three feature cards**: Classes, Camps, Tournaments — each with an icon and brief description
-- **Call-to-action buttons**: "Join Now" and "Book a Class" linking to the Contact page
-- **Upcoming Events preview** showing 2–3 nearest events with dates
+- **No API routes** (`/api/admin/login` is not possible) — Lovable has no Node.js server
+- **No `.env` files** — secrets are managed via Lovable's secrets manager or Supabase
+- **No `bcrypt` or `jsonwebtoken`** — these are Node.js libraries; Supabase Auth handles password hashing and JWT sessions natively
+- **No middleware** — there's no server to run middleware on
 
-### 2. About Us
-Tabbed or scrolling sub-sections:
-- **Our Story** — the founding philosophy and teaching approach (content provided)
-- **Mission & Vision** — concise goals for chess education
-- **Meet Tarun** — bio, photo placeholder, achievements (two-time state champion, assistant TD)
-- **Why Choose Us** — teaching style highlights: fundamentals-first, patient instruction, structured learning
-
-### 3. Programs
-Clean card-based layout for each offering:
-- Group Classes
-- One-on-One Training
-- Online Coaching
-- Beginner & Intermediate levels
-- Tournament Preparation
-
-Each card includes a brief description and a "Learn More" or "Sign Up" button linking to the Contact page.
-
-### 4. Events
-- **Summer Camps** section with details and past bootcamp info (VTSEVA volunteer camp story)
-- **Tournaments** section
-- **Workshops & Special Events**
-- **Event Calendar** — a visual monthly calendar showing upcoming events
-- **Registration Info** — links to external Google Forms for sign-up
-
-### 5. Blog *(placeholder)*
-- A simple "Coming Soon" page to hold the spot in navigation
-
-### 6. Contact Us
-- **Contact form** (name, email, message) with validation
-- **Contact details**: email (taruntubati9@gmail.com), phone placeholder, WhatsApp link
-- Toast notification on form submission (no backend — just confirmation UI for now)
+**The good news:** Supabase Auth provides everything you need — hashed passwords, JWT sessions, secure token management — without custom server code. The result is equally secure and much simpler.
 
 ---
 
-## Design & Style
-- **Warm & approachable** palette: soft cream/warm white background, friendly navy/teal primary color, warm amber accents
-- Rounded corners, soft shadows, inviting typography
-- Chess piece icons/illustrations as decorative elements
-- Fully responsive — mobile-friendly navigation with hamburger menu
-- Smooth scroll animations between sections
+## Plan
 
-## Navigation
-- **Top navigation bar** with logo placeholder + links: Home, About Us, Programs, Events, Blog, Contact Us
-- Mobile: collapsible hamburger menu
-- Sticky header for easy access while scrolling
+### Step 1: Connect Supabase to the project
+- Use Lovable's built-in Supabase integration to connect a Supabase project
+- This gives us: Auth, PostgreSQL, RLS, Edge Functions, and secure secret management
+
+### Step 2: Create `admin_roles` table via migration
+```sql
+CREATE TABLE public.admin_roles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  role TEXT NOT NULL DEFAULT 'admin',
+  created_at TIMESTAMP DEFAULT now(),
+  UNIQUE(user_id, role)
+);
+ALTER TABLE public.admin_roles ENABLE ROW LEVEL SECURITY;
+-- No SELECT policy = no client-side access (server-only via service role)
+```
+
+### Step 3: Create security-definer helper function
+```sql
+CREATE OR REPLACE FUNCTION public.is_admin(_user_id UUID)
+RETURNS BOOLEAN
+LANGUAGE sql STABLE SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.admin_roles WHERE user_id = _user_id AND role = 'admin'
+  );
+$$;
+```
+
+### Step 4: Create first admin user
+- Sign up via Supabase Auth (handles bcrypt hashing internally)
+- Insert a row into `admin_roles` for that user
+
+### Step 5: Update `src/pages/Admin.tsx` — Login
+- Replace `validateAdmin()` / `isAdminLoggedIn()` / localStorage with:
+  - `supabase.auth.signInWithPassword({ email, password })`
+  - On success, call `supabase.rpc('is_admin', { _user_id: user.id })` to verify admin role
+  - If not admin, sign out and show error
+- Session is managed by Supabase (secure httpOnly-equivalent via `supabase.auth.getSession()`)
+
+### Step 6: Update `src/pages/Admin.tsx` — Session check
+- Replace `isAdminLoggedIn()` check with `supabase.auth.getSession()` + `is_admin()` RPC on mount
+- Use `onAuthStateChange` listener for session changes
+- Logout calls `supabase.auth.signOut()`
+
+### Step 7: Update password change (Settings tab)
+- Replace `setAdminPassword()` with `supabase.auth.updateUser({ password: newPassword })`
+- Remove email change from settings (email is now the Supabase auth email)
+
+### Step 8: Clean up `src/lib/siteData.ts`
+- Remove: `validateAdmin`, `isAdminLoggedIn`, `setAdminLoggedIn`, `getAdminPassword`, `setAdminPassword`, `getAdminEmail`, `setAdminEmail`, and related constants
+- Keep all site data/content functions unchanged
+
+### Step 9: Protect admin route
+- In `Admin.tsx`, if no valid session or not admin → redirect to home or show login
+- No server middleware needed; RLS + auth state check is sufficient for a content-management admin panel
+
+---
+
+## Security Achieved
+- Passwords hashed with bcrypt (by Supabase Auth internally)
+- No credentials in frontend code
+- No localStorage auth flags
+- JWT-based sessions managed by Supabase
+- Admin role verified via security-definer function (not client-queryable)
+- RLS enabled on admin_roles table
+
+## Files Modified
+1. `src/integrations/supabase/client.ts` — new (auto-generated by Supabase connection)
+2. SQL migration — `admin_roles` table + `is_admin` function
+3. `src/pages/Admin.tsx` — replace auth logic with Supabase Auth
+4. `src/lib/siteData.ts` — remove auth-related exports
+5. `src/contexts/SiteDataContext.tsx` — remove any auth references if present
+
+## Prerequisite
+**Supabase must be connected to this project first.** Shall I initiate the Supabase connection?
+
