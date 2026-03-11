@@ -1060,7 +1060,7 @@ function AdminPanel() {
             <TabsContent value="about"><AboutPageEditor /></TabsContent>
             <TabsContent value="contact"><ContactPageEditor /></TabsContent>
             <TabsContent value="footer"><FooterEditor /></TabsContent>
-            <TabsContent value="settings"><ChangeCredentialsSection /></TabsContent>
+            <TabsContent value="settings"><ChangePasswordSection /></TabsContent>
           </Tabs>
         </main>
       </div>
