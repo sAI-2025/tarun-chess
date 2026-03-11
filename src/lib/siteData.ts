@@ -262,13 +262,6 @@ const defaultSiteData: SiteData = {
 };
 
 const STORAGE_KEY = 'tarun_chess_site_data';
-const AUTH_STORAGE_KEY = 'tarun_chess_admin_auth';
-const ADMIN_PASSWORD_KEY = 'tarun_chess_admin_password';
-const ADMIN_EMAIL_KEY = 'tarun_chess_admin_email';
-
-// Default admin credentials
-const DEFAULT_ADMIN_EMAIL = 'tarun.tubati9@gmail.com';
-const DEFAULT_ADMIN_PASSWORD = '12345678';
 
 export function getSiteData(): SiteData {
   try {
