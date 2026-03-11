@@ -119,61 +119,53 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
   );
 }
 
-// ─── Change Credentials ──────────────────────────────────────────────
-function ChangeCredentialsSection() {
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newLoginId, setNewLoginId] = useState('');
+// ─── Change Password ──────────────────────────────────────────────
+function ChangePasswordSection() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [adminEmail, setAdminEmail] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user?.email) setAdminEmail(data.user.email);
+    });
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (currentPassword !== getAdminPassword()) { toast.error('Current password is incorrect'); return; }
-    let changed = false;
-    if (newLoginId.trim()) {
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newLoginId.trim())) { toast.error('Please enter a valid email for the new Login ID'); return; }
-      setAdminEmail(newLoginId.trim());
-      changed = true;
-    }
-    if (newPassword) {
-      if (newPassword.length < 6) { toast.error('New password must be at least 6 characters'); return; }
-      if (newPassword !== confirmPassword) { toast.error('New passwords do not match'); return; }
-      setAdminPassword(newPassword);
-      changed = true;
-    }
-    if (!changed) { toast.error('Please enter a new Login ID or new password'); return; }
-    setCurrentPassword(''); setNewLoginId(''); setNewPassword(''); setConfirmPassword('');
-    toast.success('Credentials updated successfully');
+    if (!newPassword) { toast.error('Please enter a new password'); return; }
+    if (newPassword.length < 6) { toast.error('Password must be at least 6 characters'); return; }
+    if (newPassword !== confirmPassword) { toast.error('Passwords do not match'); return; }
+    setLoading(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setLoading(false);
+    if (error) { toast.error(error.message); return; }
+    setNewPassword(''); setConfirmPassword('');
+    toast.success('Password updated successfully');
   };
 
   return (
     <Card className="shadow-sm">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
-          <Lock className="h-5 w-5 text-primary" /> Change Credentials
+          <Lock className="h-5 w-5 text-primary" /> Change Password
         </CardTitle>
-        <p className="text-sm text-muted-foreground">Update your login email and/or password. Current Login ID: <span className="font-medium text-foreground">{getAdminEmail()}</span></p>
+        <p className="text-sm text-muted-foreground">Logged in as: <span className="font-medium text-foreground">{adminEmail}</span></p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
           <div className="space-y-2">
-            <Label htmlFor="currentPassword">Current Password *</Label>
-            <Input id="currentPassword" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Enter current password" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="newLoginId">New Login ID (Email)</Label>
-            <Input id="newLoginId" type="email" value={newLoginId} onChange={(e) => setNewLoginId(e.target.value)} placeholder={getAdminEmail()} />
-            <p className="text-xs text-muted-foreground">Leave blank to keep current login email</p>
-          </div>
-          <div className="space-y-2">
             <Label htmlFor="newPassword">New Password</Label>
-            <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Leave blank to keep current" />
+            <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Enter new password" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">Confirm New Password</Label>
             <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Re-enter new password" />
           </div>
-          <Button type="submit" className="font-semibold">Update Credentials</Button>
+          <Button type="submit" className="font-semibold" disabled={loading}>
+            {loading ? 'Updating...' : 'Update Password'}
+          </Button>
         </form>
       </CardContent>
     </Card>
