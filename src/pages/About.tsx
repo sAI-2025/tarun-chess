@@ -1,3 +1,4 @@
+
 import { motion } from "framer-motion";
 import { BookOpen, Target, User, Star, LucideIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -65,17 +66,17 @@ const About = () => {
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
             <h2 className="font-display text-3xl font-bold text-foreground mb-8 text-center">{about.coachSectionTitle}</h2>
             <div className="flex flex-col md:flex-row gap-8 items-start">
-               <div className="shrink-0 mx-auto md:mx-0">
-                  <div className="h-48 w-40 rounded-2xl overflow-hidden shadow-lg">
-                    <img
-                      src={about.coachPhotoUrl || tarunPhoto}
-                      alt={`${about.coachName} — Chess Coach`}
-                      className="h-full w-full object-cover object-top"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </div>
-               </div>
+              <div className="shrink-0 mx-auto md:mx-0">
+                <div className="h-48 w-40 rounded-2xl overflow-hidden shadow-lg">
+                  <img
+                    src={about.coachPhotoUrl || tarunPhoto}
+                    alt={${about.coachName} — Chess Coach}
+                  className="h-full w-full object-cover object-top"
+                  loading="lazy"
+                  decoding="async"
+                  />
+                </div>
+              </div>
               <div className="space-y-3 text-muted-foreground leading-relaxed">
                 <h3 className="font-display text-xl font-semibold text-foreground">{about.coachName}</h3>
                 {about.coachParagraphs.map((p, i) => (
