@@ -8,19 +8,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { useSiteData } from '@/contexts/SiteDataContext';
-import {
-  validateAdmin,
-  isAdminLoggedIn,
-  setAdminLoggedIn,
-  generateId,
-  getAdminPassword,
-  setAdminPassword,
-  getAdminEmail,
-  setAdminEmail
-} from '@/lib/siteData';
+import { generateId } from '@/lib/siteData';
 import type { SiteData, UpcomingEvent, Program, EventSection, PastBootcamp, EventPageCard, AboutFeature, HomePageData, ContactPageData, EventsPageData, FooterData, FooterQuickLink, FooterSocialLink } from '@/lib/siteData';
 import { Trash2, Plus, GripVertical, LogOut, Eye, Save, RotateCcw, Lock, Pencil, Calendar, BookOpen, LayoutGrid, CheckCircle, AlertCircle, User, Home, Upload, X, Mail, PanelBottom } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 // ─── Draft Context ───────────────────────────────────────────────────
 interface DraftContextType {
