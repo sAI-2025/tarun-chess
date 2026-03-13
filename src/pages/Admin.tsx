@@ -64,11 +64,22 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateAdmin(email, password)) { setAdminLoggedIn(true); onLogin(); }
-    else { setError('Invalid credentials'); }
+    setError('');
+    setLoading(true);
+    try {
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      if (signInError) { setError('Invalid credentials'); setLoading(false); return; }
+      const { data: isAdmin } = await supabase.rpc('is_admin', { _user_id: data.user.id });
+      if (!isAdmin) { await supabase.auth.signOut(); setError('Not authorized as admin'); setLoading(false); return; }
+      onLogin();
+    } catch {
+      setError('Login failed');
+    }
+    setLoading(false);
   };
 
   return (
@@ -92,7 +103,7 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
               <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
             </div>
             {error && <p className="text-sm text-destructive font-medium">{error}</p>}
-            <Button type="submit" className="w-full h-11 text-base font-semibold">Sign In</Button>
+            <Button type="submit" className="w-full h-11 text-base font-semibold" disabled={loading}>{loading ? 'Signing in...' : 'Sign In'}</Button>
           </form>
         </CardContent>
       </Card>
