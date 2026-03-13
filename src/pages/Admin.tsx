@@ -114,25 +114,45 @@ function ChangeCredentialsSection() {
   const [newLoginId, setNewLoginId] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [currentEmail, setCurrentEmail] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user?.email) setCurrentEmail(data.user.email);
+    });
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (currentPassword !== getAdminPassword()) { toast.error('Current password is incorrect'); return; }
+    setLoading(true);
+
+    // Verify current password by re-signing in
+    const { error: verifyError } = await supabase.auth.signInWithPassword({ email: currentEmail, password: currentPassword });
+    if (verifyError) { toast.error('Current password is incorrect'); setLoading(false); return; }
+
     let changed = false;
+
     if (newLoginId.trim()) {
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newLoginId.trim())) { toast.error('Please enter a valid email for the new Login ID'); return; }
-      setAdminEmail(newLoginId.trim());
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newLoginId.trim())) { toast.error('Please enter a valid email'); setLoading(false); return; }
+      const { error } = await supabase.auth.updateUser({ email: newLoginId.trim() });
+      if (error) { toast.error('Failed to update email: ' + error.message); setLoading(false); return; }
       changed = true;
     }
+
     if (newPassword) {
-      if (newPassword.length < 6) { toast.error('New password must be at least 6 characters'); return; }
-      if (newPassword !== confirmPassword) { toast.error('New passwords do not match'); return; }
-      setAdminPassword(newPassword);
+      if (newPassword.length < 6) { toast.error('New password must be at least 6 characters'); setLoading(false); return; }
+      if (newPassword !== confirmPassword) { toast.error('New passwords do not match'); setLoading(false); return; }
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) { toast.error('Failed to update password: ' + error.message); setLoading(false); return; }
       changed = true;
     }
-    if (!changed) { toast.error('Please enter a new Login ID or new password'); return; }
+
+    if (!changed) { toast.error('Please enter a new Login ID or new password'); setLoading(false); return; }
     setCurrentPassword(''); setNewLoginId(''); setNewPassword(''); setConfirmPassword('');
     toast.success('Credentials updated successfully');
+    if (newLoginId.trim()) setCurrentEmail(newLoginId.trim());
+    setLoading(false);
   };
 
   return (
@@ -141,7 +161,7 @@ function ChangeCredentialsSection() {
         <CardTitle className="flex items-center gap-2 text-lg">
           <Lock className="h-5 w-5 text-primary" /> Change Credentials
         </CardTitle>
-        <p className="text-sm text-muted-foreground">Update your login email and/or password. Current Login ID: <span className="font-medium text-foreground">{getAdminEmail()}</span></p>
+        <p className="text-sm text-muted-foreground">Update your login email and/or password. Current Login ID: <span className="font-medium text-foreground">{currentEmail}</span></p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
@@ -151,7 +171,7 @@ function ChangeCredentialsSection() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="newLoginId">New Login ID (Email)</Label>
-            <Input id="newLoginId" type="email" value={newLoginId} onChange={(e) => setNewLoginId(e.target.value)} placeholder={getAdminEmail()} />
+            <Input id="newLoginId" type="email" value={newLoginId} onChange={(e) => setNewLoginId(e.target.value)} placeholder={currentEmail} />
             <p className="text-xs text-muted-foreground">Leave blank to keep current login email</p>
           </div>
           <div className="space-y-2">
@@ -162,7 +182,7 @@ function ChangeCredentialsSection() {
             <Label htmlFor="confirmPassword">Confirm New Password</Label>
             <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Re-enter new password" />
           </div>
-          <Button type="submit" className="font-semibold">Update Credentials</Button>
+          <Button type="submit" className="font-semibold" disabled={loading}>{loading ? 'Updating...' : 'Update Credentials'}</Button>
         </form>
       </CardContent>
     </Card>
