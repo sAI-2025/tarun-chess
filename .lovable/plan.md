@@ -1,60 +1,83 @@
+# Replace localStorage Auth with Supabase Auth
 
-# Chess Academy Website
+## Overview
 
-A warm, approachable informational website for Tarun's Chess Academy — designed to attract parents and students, showcase programs, and direct visitors to external registration.
+Replace the insecure localStorage-based admin authentication with Supabase Auth. Keep the UI identical — only swap the underlying auth logic.
 
----
+## Important Note About Credentials
 
-## Pages & Structure
+The `.env` file is auto-managed by Lovable Cloud and must NOT be edited manually. The Supabase credentials shown (`VITE_SUPABASE_URL`, etc.) are already configured automatically. No credential changes needed.
 
-### 1. Home
-- **Hero section** with a welcoming headline, chess-themed imagery (placeholder), and tagline about building confident chess players
-- **Three feature cards**: Classes, Camps, Tournaments — each with an icon and brief description
-- **Call-to-action buttons**: "Join Now" and "Book a Class" linking to the Contact page
-- **Upcoming Events preview** showing 2–3 nearest events with dates
+## What Already Exists
 
-### 2. About Us
-Tabbed or scrolling sub-sections:
-- **Our Story** — the founding philosophy and teaching approach (content provided)
-- **Mission & Vision** — concise goals for chess education
-- **Meet Tarun** — bio, photo placeholder, achievements (two-time state champion, assistant TD)
-- **Why Choose Us** — teaching style highlights: fundamentals-first, patient instruction, structured learning
+- `admin_roles` table in the database
+- `is_admin()` security-definer function
+- `site_data` table with RLS policies using `is_admin()`
+- Supabase client at `src/integrations/supabase/client.ts`
 
-### 3. Programs
-Clean card-based layout for each offering:
-- Group Classes
-- One-on-One Training
-- Online Coaching
-- Beginner & Intermediate levels
-- Tournament Preparation
+## Step 1: Create the first admin user
 
-Each card includes a brief description and a "Learn More" or "Sign Up" button linking to the Contact page.
+- Use a database migration to enable auto-confirm for initial setup, OR use Supabase Auth signup
+- Insert an admin user into `auth.users` via an edge function or manual signup
+- Add their `user_id` to `admin_roles` table
 
-### 4. Events
-- **Summer Camps** section with details and past bootcamp info (VTSEVA volunteer camp story)
-- **Tournaments** section
-- **Workshops & Special Events**
-- **Event Calendar** — a visual monthly calendar showing upcoming events
-- **Registration Info** — links to external Google Forms for sign-up
+We will need to ask the user for the admin email/password they want to use, then create the user.
 
-### 5. Blog *(placeholder)*
-- A simple "Coming Soon" page to hold the spot in navigation
+## Step 2: Update `AdminLogin` component (~lines 71-108)
 
-### 6. Contact Us
-- **Contact form** (name, email, message) with validation
-- **Contact details**: email (taruntubati9@gmail.com), phone placeholder, WhatsApp link
-- Toast notification on form submission (no backend — just confirmation UI for now)
+Replace `validateAdmin()` with:
 
----
+```typescript
+const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+if (error) { setError('Invalid credentials'); return; }
+const { data: isAdmin } = await supabase.rpc('is_admin', { _user_id: data.user.id });
+if (!isAdmin) { await supabase.auth.signOut(); setError('Not an admin'); return; }
+onLogin();
+```
 
-## Design & Style
-- **Warm & approachable** palette: soft cream/warm white background, friendly navy/teal primary color, warm amber accents
-- Rounded corners, soft shadows, inviting typography
-- Chess piece icons/illustrations as decorative elements
-- Fully responsive — mobile-friendly navigation with hamburger menu
-- Smooth scroll animations between sections
+## Step 3: Update `ChangeCredentialsSection` (~lines 112-169)
 
-## Navigation
-- **Top navigation bar** with logo placeholder + links: Home, About Us, Programs, Events, Blog, Contact Us
-- Mobile: collapsible hamburger menu
-- Sticky header for easy access while scrolling
+Replace localStorage password/email change with:
+
+- Password update: `supabase.auth.updateUser({ password: newPassword })`
+- Email update: `supabase.auth.updateUser({ email: newEmail })`
+- Verify current password by re-signing in before allowing changes
+
+## Step 4: Update `Admin` main component (~lines 1068-1073)
+
+Replace `isAdminLoggedIn()` check with:
+
+```typescript
+const [isLoggedIn, setIsLoggedIn] = useState(false);
+const [loading, setLoading] = useState(true);
+useEffect(() => {
+  supabase.auth.getSession().then(({ data }) => {
+    if (data.session) {
+      supabase.rpc('is_admin', { _user_id: data.session.user.id }).then(({ data: admin }) => {
+        setIsLoggedIn(!!admin);
+        setLoading(false);
+      });
+    } else { setLoading(false); }
+  });
+}, []);
+```
+
+## Step 5: Update logout (~line 989)
+
+Replace `setAdminLoggedIn(false)` with `await supabase.auth.signOut()`
+
+## Step 6: Clean up `src/lib/siteData.ts`
+
+Remove all auth-related exports: `validateAdmin`, `isAdminLoggedIn`, `setAdminLoggedIn`, `getAdminPassword`, `setAdminPassword`, `getAdminEmail`, `setAdminEmail`, and the related constants.
+
+## What Does NOT Change
+
+- All admin panel UI (tabs, CRUD, drag-and-drop, draft/publish)
+- Site data context and content management
+- All public pages
+- The `site_data` table and its RLS policies
+
+**Note:** 
+
+- Use the .env for  storing credintials on them
+  &nbsp;
