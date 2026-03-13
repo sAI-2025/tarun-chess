@@ -8,11 +8,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { useSiteData } from '@/contexts/SiteDataContext';
-import { generateId } from '@/lib/siteData';
+import {
+  validateAdmin,
+  isAdminLoggedIn,
+  setAdminLoggedIn,
+  generateId,
+  getAdminPassword,
+  setAdminPassword,
+  getAdminEmail,
+  setAdminEmail
+} from '@/lib/siteData';
 import type { SiteData, UpcomingEvent, Program, EventSection, PastBootcamp, EventPageCard, AboutFeature, HomePageData, ContactPageData, EventsPageData, FooterData, FooterQuickLink, FooterSocialLink } from '@/lib/siteData';
 import { Trash2, Plus, GripVertical, LogOut, Eye, Save, RotateCcw, Lock, Pencil, Calendar, BookOpen, LayoutGrid, CheckCircle, AlertCircle, User, Home, Upload, X, Mail, PanelBottom } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 
 // ─── Draft Context ───────────────────────────────────────────────────
 interface DraftContextType {
@@ -64,28 +72,11 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setLoading(true);
-    try {
-      const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
-      if (authError) { setError('Invalid credentials'); setLoading(false); return; }
-      // Verify admin role
-      const { data: isAdmin } = await supabase.rpc('is_admin', { _user_id: data.user.id });
-      if (!isAdmin) {
-        await supabase.auth.signOut();
-        setError('You do not have admin access');
-        setLoading(false);
-        return;
-      }
-      onLogin();
-    } catch {
-      setError('An error occurred. Please try again.');
-    }
-    setLoading(false);
+    if (validateAdmin(email, password)) { setAdminLoggedIn(true); onLogin(); }
+    else { setError('Invalid credentials'); }
   };
 
   return (
@@ -109,9 +100,7 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
               <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
             </div>
             {error && <p className="text-sm text-destructive font-medium">{error}</p>}
-            <Button type="submit" className="w-full h-11 text-base font-semibold" disabled={loading}>
-              {loading ? 'Signing in...' : 'Sign In'}
-            </Button>
+            <Button type="submit" className="w-full h-11 text-base font-semibold">Sign In</Button>
           </form>
         </CardContent>
       </Card>
@@ -119,53 +108,61 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
   );
 }
 
-// ─── Change Password ──────────────────────────────────────────────
-function ChangePasswordSection() {
+// ─── Change Credentials ──────────────────────────────────────────────
+function ChangeCredentialsSection() {
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newLoginId, setNewLoginId] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [adminEmail, setAdminEmail] = useState('');
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user?.email) setAdminEmail(data.user.email);
-    });
-  }, []);
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newPassword) { toast.error('Please enter a new password'); return; }
-    if (newPassword.length < 6) { toast.error('Password must be at least 6 characters'); return; }
-    if (newPassword !== confirmPassword) { toast.error('Passwords do not match'); return; }
-    setLoading(true);
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
-    setLoading(false);
-    if (error) { toast.error(error.message); return; }
-    setNewPassword(''); setConfirmPassword('');
-    toast.success('Password updated successfully');
+    if (currentPassword !== getAdminPassword()) { toast.error('Current password is incorrect'); return; }
+    let changed = false;
+    if (newLoginId.trim()) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newLoginId.trim())) { toast.error('Please enter a valid email for the new Login ID'); return; }
+      setAdminEmail(newLoginId.trim());
+      changed = true;
+    }
+    if (newPassword) {
+      if (newPassword.length < 6) { toast.error('New password must be at least 6 characters'); return; }
+      if (newPassword !== confirmPassword) { toast.error('New passwords do not match'); return; }
+      setAdminPassword(newPassword);
+      changed = true;
+    }
+    if (!changed) { toast.error('Please enter a new Login ID or new password'); return; }
+    setCurrentPassword(''); setNewLoginId(''); setNewPassword(''); setConfirmPassword('');
+    toast.success('Credentials updated successfully');
   };
 
   return (
     <Card className="shadow-sm">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
-          <Lock className="h-5 w-5 text-primary" /> Change Password
+          <Lock className="h-5 w-5 text-primary" /> Change Credentials
         </CardTitle>
-        <p className="text-sm text-muted-foreground">Logged in as: <span className="font-medium text-foreground">{adminEmail}</span></p>
+        <p className="text-sm text-muted-foreground">Update your login email and/or password. Current Login ID: <span className="font-medium text-foreground">{getAdminEmail()}</span></p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
           <div className="space-y-2">
+            <Label htmlFor="currentPassword">Current Password *</Label>
+            <Input id="currentPassword" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Enter current password" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="newLoginId">New Login ID (Email)</Label>
+            <Input id="newLoginId" type="email" value={newLoginId} onChange={(e) => setNewLoginId(e.target.value)} placeholder={getAdminEmail()} />
+            <p className="text-xs text-muted-foreground">Leave blank to keep current login email</p>
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="newPassword">New Password</Label>
-            <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Enter new password" />
+            <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Leave blank to keep current" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">Confirm New Password</Label>
             <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Re-enter new password" />
           </div>
-          <Button type="submit" className="font-semibold" disabled={loading}>
-            {loading ? 'Updating...' : 'Update Password'}
-          </Button>
+          <Button type="submit" className="font-semibold">Update Credentials</Button>
         </form>
       </CardContent>
     </Card>
@@ -989,7 +986,7 @@ function AdminPanel() {
     }
   };
 
-  const handleLogout = async () => { await supabase.auth.signOut(); navigate('/'); };
+  const handleLogout = () => { setAdminLoggedIn(false); navigate('/'); };
 
   const handleReset = () => {
     if (confirm('Reset all content to defaults? This cannot be undone.')) {
@@ -1060,7 +1057,7 @@ function AdminPanel() {
             <TabsContent value="about"><AboutPageEditor /></TabsContent>
             <TabsContent value="contact"><ContactPageEditor /></TabsContent>
             <TabsContent value="footer"><FooterEditor /></TabsContent>
-            <TabsContent value="settings"><ChangePasswordSection /></TabsContent>
+            <TabsContent value="settings"><ChangeCredentialsSection /></TabsContent>
           </Tabs>
         </main>
       </div>
@@ -1070,42 +1067,7 @@ function AdminPanel() {
 
 // ─── Main Admin Page ─────────────────────────────────────────────────
 export default function Admin() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [checking, setChecking] = useState(true);
-
-  useEffect(() => {
-    // Check existing session on mount
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        const { data: isAdmin } = await supabase.rpc('is_admin', { _user_id: session.user.id });
-        setIsLoggedIn(!!isAdmin);
-      }
-      setChecking(false);
-    };
-    checkSession();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT') {
-        setIsLoggedIn(false);
-      } else if (session) {
-        const { data: isAdmin } = await supabase.rpc('is_admin', { _user_id: session.user.id });
-        setIsLoggedIn(!!isAdmin);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  if (checking) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <p className="text-muted-foreground">Loading...</p>
-      </div>
-    );
-  }
-
+  const [isLoggedIn, setIsLoggedIn] = useState(isAdminLoggedIn());
   if (!isLoggedIn) return <AdminLogin onLogin={() => setIsLoggedIn(true)} />;
   return <AdminPanel />;
 }
