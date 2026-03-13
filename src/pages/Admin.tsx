@@ -965,13 +965,6 @@ function AdminPanel() {
   // Re-sync draft when siteData changes (e.g. after reset)
   useEffect(() => { setDraft(siteData); }, [siteData]);
 
-  // Set document title for admin page
-  useEffect(() => {
-    const prev = document.title;
-    document.title = 'Admin Panel | Tarun Chess Academy';
-    return () => { document.title = prev; };
-  }, []);
-
   const hasChanges = JSON.stringify(draft) !== JSON.stringify(siteData);
 
   const handlePublish = () => {
