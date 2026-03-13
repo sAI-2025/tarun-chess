@@ -1087,7 +1087,35 @@ function AdminPanel() {
 
 // ─── Main Admin Page ─────────────────────────────────────────────────
 export default function Admin() {
-  const [isLoggedIn, setIsLoggedIn] = useState(isAdminLoggedIn());
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) {
+        supabase.rpc('is_admin', { _user_id: data.session.user.id }).then(({ data: admin }) => {
+          setIsLoggedIn(!!admin);
+          setLoading(false);
+        });
+      } else {
+        setLoading(false);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) { setIsLoggedIn(false); }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
   if (!isLoggedIn) return <AdminLogin onLogin={() => setIsLoggedIn(true)} />;
   return <AdminPanel />;
 }
