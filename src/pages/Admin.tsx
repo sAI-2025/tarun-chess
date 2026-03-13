@@ -1006,7 +1006,7 @@ function AdminPanel() {
     }
   };
 
-  const handleLogout = () => { setAdminLoggedIn(false); navigate('/'); };
+  const handleLogout = async () => { await supabase.auth.signOut(); navigate('/'); };
 
   const handleReset = () => {
     if (confirm('Reset all content to defaults? This cannot be undone.')) {
