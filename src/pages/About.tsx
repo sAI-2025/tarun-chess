@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useSiteData } from "@/contexts/SiteDataContext";
 import tarunPhoto from "@/assets/tarun-photo.jpeg";
 import type { AboutFeature } from "@/lib/siteData";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },

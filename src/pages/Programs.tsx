@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSiteData } from "@/contexts/SiteDataContext";
 import type { Program } from "@/lib/siteData";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 const iconMap = {
   users: Users,

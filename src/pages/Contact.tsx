@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useSiteData } from "@/contexts/SiteDataContext";
 import { z } from "zod";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100),

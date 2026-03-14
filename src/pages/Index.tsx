@@ -46,6 +46,7 @@ const Index = () => {
   const overlayOpacity = useTransform(scrollYProgress, [0, 1], [0.55, 0.8]);
   
   const { siteData } = useSiteData();
+  useDocumentTitle("Tarun Chess Academy — Chess Classes, Camps & Tournaments");
 
   return (
     <>
