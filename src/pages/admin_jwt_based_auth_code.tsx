@@ -142,26 +142,13 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
     setLoading(true);
     setError("");
 
-    try {
-      const { data, error } = await supabase
-        .from("Admin_Data")
-        .select("*")
-        .eq("email", email)
-        .eq("password", password)
-        .maybeSingle();
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-      if (error) throw error;
-
-      if (data) {
-        // Persist simple session locally
-        localStorage.setItem("admin_user", JSON.stringify(data));
-        onLogin();
-      } else {
-        setError("Invalid credentials");
-      }
-    } catch (err: any) {
-      setError(err.message || "An error occurred");
-    }
+    if (error) setError(error.message);
+    else onLogin();
     setLoading(false);
   };
 
@@ -223,29 +210,31 @@ function ChangeCredentialsSection() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [currentEmail, setCurrentEmail] = useState("");
-  const [userId, setUserId] = useState<number | string | null>(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem("admin_user");
-    if (stored) {
-      const user = JSON.parse(stored);
-      setCurrentEmail(user.email);
-      setUserId(user.id);
-    }
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user?.email) setCurrentEmail(data.user.email);
+    });
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Verify current password against DB
-    const { data: user, error: verifyError } = await supabase
-      .from("Admin_Data")
-      .select("*")
-      .eq("id", userId)
-      .eq("password", currentPassword)
-      .maybeSingle();
+    // Verify current password by attempting re-login
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user || !user.email) {
+      toast.error("Session expired. Please log in again.");
+      return;
+    }
 
-    if (verifyError || !user) {
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password: currentPassword,
+    });
+
+    if (signInError) {
       toast.error("Current password is incorrect");
       return;
     }
@@ -256,6 +245,10 @@ function ChangeCredentialsSection() {
     if (newLoginId.trim()) {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newLoginId.trim())) {
         toast.error("Please enter a valid email for the new Login ID");
+        return;
+      }
+      if (newLoginId.trim() === user.email) {
+        toast.error("New email cannot be the same as the current email");
         return;
       }
       updates.email = newLoginId.trim();
@@ -278,24 +271,28 @@ function ChangeCredentialsSection() {
       return;
     }
 
-    const { error: updateError } = await supabase
-      .from("Admin_Data")
-      .update(updates)
-      .eq("id", userId);
+    const { data: updateData, error: updateError } =
+      await supabase.auth.updateUser(updates);
 
     if (updateError) {
       toast.error(updateError.message);
     } else {
-      // Update local storage session with new details
-      const newUser = { ...user, ...updates };
-      localStorage.setItem("admin_user", JSON.stringify(newUser));
-      if (updates.email) setCurrentEmail(updates.email);
-
       setCurrentPassword("");
       setNewLoginId("");
       setNewPassword("");
       setConfirmPassword("");
-      toast.success("Credentials updated successfully");
+
+      // If email was changed, check if it's pending confirmation (updateData.user.email will still be the old one or waiting)
+      if (updates.email && updateData.user?.email !== updates.email) {
+        toast.info("A confirmation link has been sent to your new email.");
+      } else {
+        toast.success("Credentials updated successfully");
+      }
+
+      // Update the displayed email if it changed effectively immediately
+      if (updateData.user?.email) {
+        setCurrentEmail(updateData.user.email);
+      }
     }
   };
 
@@ -2095,11 +2092,8 @@ function AdminPanel() {
   };
 
   const handleLogout = async () => {
-    // Clear local session
-    localStorage.removeItem("admin_user");
-    // Redirect to home or reload to reset auth state
+    await supabase.auth.signOut();
     navigate("/");
-    window.location.reload();
   };
 
   const handleReset = () => {
@@ -2250,15 +2244,28 @@ function AdminPanel() {
 
 // ─── Main Admin Page ─────────────────────────────────────────────────
 export default function Admin() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const stored = localStorage.getItem("admin_user");
-    if (stored) {
-      setIsAuthenticated(true);
-    }
-    setLoading(false);
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        setSession(session);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Session check failed:", err);
+        setLoading(false);
+      });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   if (loading)
@@ -2267,7 +2274,6 @@ export default function Admin() {
         Loading...
       </div>
     );
-  if (!isAuthenticated)
-    return <AdminLogin onLogin={() => setIsAuthenticated(true)} />;
+  if (!session) return <AdminLogin onLogin={() => {}} />;
   return <AdminPanel />;
 }

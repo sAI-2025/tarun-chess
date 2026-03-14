@@ -1,0 +1,43 @@
+-- This SQL script should be run in your Supabase SQL Editor.
+
+-- The `auth.users` table is managed by Supabase and already exists.
+-- It securely stores user emails, passwords, and timestamps.
+-- You should NOT create a separate table for passwords.
+
+-- This table will be used to specify which users have admin privileges.
+-- It links to the `auth.users` table.
+CREATE TABLE public.admins (
+  -- This `id` column will store the user's ID from `auth.users`.
+  id UUID PRIMARY KEY,
+
+  -- This timestamp records when the user was made an admin.
+  -- The `auth.users` table already has its own created_at and deleted_at for the user account.
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+
+  -- This creates a link to the `auth.users` table.
+  -- If a user is deleted from `auth.users`, they are also removed from this table.
+  CONSTRAINT admins_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE
+);
+
+-- Add a comment to the table for clarity.
+COMMENT ON TABLE public.admins IS 'Stores user IDs that have admin privileges. Links to auth.users.';
+
+-- Enable Row Level Security for the new table.
+ALTER TABLE public.admins ENABLE ROW LEVEL SECURITY;
+
+-- Create a security policy. For this example, we'll allow any authenticated
+-- user to see the list of admins. You might want to restrict this further
+-- in a production application (e.g., only other admins can see the list).
+CREATE POLICY "Admins are viewable by authenticated users."
+  ON public.admins FOR SELECT
+  TO authenticated
+  USING (true);
+
+-- Note on managing admins:
+-- You would typically manage who is an admin through the Supabase dashboard
+-- (by inserting a row into this `admins` table) or via a trusted server-side function.
+-- You should NOT create policies that allow users to make themselves admins.
+--
+-- To make a user an admin manually, you would find their UUID in the `auth.users`
+-- table and run the following SQL:
+-- INSERT INTO public.admins (id) VALUES ('paste-the-user-uuid-here');
