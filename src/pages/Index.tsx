@@ -7,6 +7,7 @@ import FloatingChessPieces from "@/components/FloatingChessPieces";
 import heroBanner from "@/assets/chess-hero-banner.jpg";
 import { useRef } from "react";
 import { useSiteData } from "@/contexts/SiteDataContext";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -45,6 +46,7 @@ const Index = () => {
   const overlayOpacity = useTransform(scrollYProgress, [0, 1], [0.55, 0.8]);
   
   const { siteData } = useSiteData();
+  useDocumentTitle("Tarun Chess Academy — Chess Classes, Camps & Tournaments");
 
   return (
     <>

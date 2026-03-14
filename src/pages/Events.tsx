@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { useSiteData } from "@/contexts/SiteDataContext";
 import type { EventSection, EventPageCard } from "@/lib/siteData";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 const iconMap = {
   tent: Tent,
@@ -22,6 +23,7 @@ const fadeUp = {
 const Events = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const { siteData } = useSiteData();
+  useDocumentTitle("Events | Tarun Chess Academy");
 
   const eventDates = [new Date(2026, 2, 15), new Date(2026, 5, 22), new Date(2026, 7, 10)];
 

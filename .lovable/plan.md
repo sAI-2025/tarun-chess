@@ -1,66 +1,60 @@
 
+# Chess Academy Website
 
-# SEO Optimization Plan — Tarun Chess Academy
+A warm, approachable informational website for Tarun's Chess Academy — designed to attract parents and students, showcase programs, and direct visitors to external registration.
 
-## Problem
-The `index.html` contains multiple Lovable-branded metadata traces that hurt SEO and social sharing:
-- `og:title` = "Lovable App"
-- `og:description` = "Lovable Generated Project"
-- `twitter:site` = "@Lovable"
-- `twitter:title` = "Lovable App"
-- `twitter:description` = "Lovable Generated Project"
-- `og:image` and `twitter:image` point to Lovable CDN preview screenshots
-- A leftover TODO comment about Lovable
+---
 
-## Changes
+## Pages & Structure
 
-### 1. Clean up `index.html` metadata
-Replace all Lovable-branded meta tags with Tarun Chess Academy branding:
+### 1. Home
+- **Hero section** with a welcoming headline, chess-themed imagery (placeholder), and tagline about building confident chess players
+- **Three feature cards**: Classes, Camps, Tournaments — each with an icon and brief description
+- **Call-to-action buttons**: "Join Now" and "Book a Class" linking to the Contact page
+- **Upcoming Events preview** showing 2–3 nearest events with dates
 
-| Tag | Current | New |
-|-----|---------|-----|
-| `og:title` | "Lovable App" | "Tarun Chess Academy — Chess Classes, Camps & Tournaments" |
-| `og:description` | "Lovable Generated Project" | Same as existing meta description |
-| `og:url` | missing | "https://tarun-chess.lovable.app" |
-| `og:image` | Lovable CDN screenshot | `/favicon.ico` (or hero banner if hosted publicly) |
-| `twitter:site` | "@Lovable" | Remove (no Twitter account) or set to academy handle |
-| `twitter:title` | "Lovable App" | Match og:title |
-| `twitter:description` | "Lovable Generated Project" | Match og:description |
-| `twitter:image` | Lovable CDN screenshot | Match og:image |
+### 2. About Us
+Tabbed or scrolling sub-sections:
+- **Our Story** — the founding philosophy and teaching approach (content provided)
+- **Mission & Vision** — concise goals for chess education
+- **Meet Tarun** — bio, photo placeholder, achievements (two-time state champion, assistant TD)
+- **Why Choose Us** — teaching style highlights: fundamentals-first, patient instruction, structured learning
 
-Remove the `<!-- TODO: Update og:title -->` comment.
+### 3. Programs
+Clean card-based layout for each offering:
+- Group Classes
+- One-on-One Training
+- Online Coaching
+- Beginner & Intermediate levels
+- Tournament Preparation
 
-Add additional SEO tags:
-- `<meta name="keywords">` with chess-related terms
-- `<link rel="canonical">` pointing to published URL
-- `<meta name="robots" content="index, follow">`
+Each card includes a brief description and a "Learn More" or "Sign Up" button linking to the Contact page.
 
-### 2. Add per-page `document.title` updates
-Create a small `useDocumentTitle` hook and add it to each page so the browser tab title changes per route:
+### 4. Events
+- **Summer Camps** section with details and past bootcamp info (VTSEVA volunteer camp story)
+- **Tournaments** section
+- **Workshops & Special Events**
+- **Event Calendar** — a visual monthly calendar showing upcoming events
+- **Registration Info** — links to external Google Forms for sign-up
 
-- **Home**: "Tarun Chess Academy — Chess Classes, Camps & Tournaments"
-- **About**: "About Us | Tarun Chess Academy"
-- **Programs**: "Programs | Tarun Chess Academy"
-- **Events**: "Events | Tarun Chess Academy"
-- **Contact**: "Contact Us | Tarun Chess Academy"
-- **Admin**: "Admin | Tarun Chess Academy"
+### 5. Blog *(placeholder)*
+- A simple "Coming Soon" page to hold the spot in navigation
 
-### 3. Add JSON-LD structured data
-Add a `<script type="application/ld+json">` block in `index.html` with Organization schema:
-```json
-{
-  "@context": "https://schema.org",
-  "@type": "EducationalOrganization",
-  "name": "Tarun Chess Academy",
-  "description": "Expert chess coaching...",
-  "url": "https://tarun-chess.lovable.app"
-}
-```
+### 6. Contact Us
+- **Contact form** (name, email, message) with validation
+- **Contact details**: email (taruntubati9@gmail.com), phone placeholder, WhatsApp link
+- Toast notification on form submission (no backend — just confirmation UI for now)
 
-### Files modified
-- `index.html` — replace all Lovable metadata, add canonical/keywords/robots/JSON-LD
-- New: `src/hooks/useDocumentTitle.ts` — small hook
-- `src/pages/Index.tsx`, `About.tsx`, `Programs.tsx`, `Events.tsx`, `Contact.tsx`, `Admin.tsx` — add `useDocumentTitle()` call
+---
 
-No layout, functionality, or styling changes.
+## Design & Style
+- **Warm & approachable** palette: soft cream/warm white background, friendly navy/teal primary color, warm amber accents
+- Rounded corners, soft shadows, inviting typography
+- Chess piece icons/illustrations as decorative elements
+- Fully responsive — mobile-friendly navigation with hamburger menu
+- Smooth scroll animations between sections
 
+## Navigation
+- **Top navigation bar** with logo placeholder + links: Home, About Us, Programs, Events, Blog, Contact Us
+- Mobile: collapsible hamburger menu
+- Sticky header for easy access while scrolling

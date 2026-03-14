@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useSiteData } from "@/contexts/SiteDataContext";
 import { z } from "zod";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100),
@@ -23,6 +24,7 @@ const fadeUp = {
 const Contact = () => {
   const { toast } = useToast();
   const { siteData } = useSiteData();
+  useDocumentTitle("Contact Us | Tarun Chess Academy");
   const contact = siteData.contactPage;
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
