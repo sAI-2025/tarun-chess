@@ -25,6 +25,7 @@ const fadeUp = {
 };
 
 const Programs = () => {
+  useDocumentTitle("Programs | Tarun Chess Academy");
   const { siteData } = useSiteData();
 
   return (

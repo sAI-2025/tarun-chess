@@ -20,6 +20,7 @@ const iconMap: Record<AboutFeature['iconType'], LucideIcon> = {
 };
 
 const About = () => {
+  useDocumentTitle("About Us | Tarun Chess Academy");
   const { siteData } = useSiteData();
   const about = siteData.aboutPage;
 

@@ -24,6 +24,7 @@ const fadeUp = {
 const Contact = () => {
   const { toast } = useToast();
   const { siteData } = useSiteData();
+  useDocumentTitle("Contact Us | Tarun Chess Academy");
   const contact = siteData.contactPage;
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
