@@ -7,6 +7,7 @@ import FloatingChessPieces from "@/components/FloatingChessPieces";
 import heroBanner from "@/assets/chess-hero-banner.jpg";
 import { useRef } from "react";
 import { useSiteData } from "@/contexts/SiteDataContext";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
