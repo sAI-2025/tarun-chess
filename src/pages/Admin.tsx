@@ -2251,6 +2251,7 @@ function AdminPanel() {
 
 // ─── Main Admin Page ─────────────────────────────────────────────────
 export default function Admin() {
+  useDocumentTitle("Admin | Tarun Chess Academy");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 
